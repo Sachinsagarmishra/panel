@@ -15,7 +15,14 @@ $response = [
 ];
 
 try {
-    // 1. Determine Date Range and Grouping
+    // Check if payment_date column exists
+    $colCheck = $pdo->query("SHOW COLUMNS FROM invoices LIKE 'payment_date'");
+    $hasPaymentDate = $colCheck->rowCount() > 0;
+
+    // Use payment_date if available (for precise revenue timing), otherwise created_at
+    $dateCol = $hasPaymentDate ? "COALESCE(payment_date, created_at)" : "created_at";
+
+    // Determine Date Range and Grouping
     $dateFormat = '';
     $groupBy = '';
     $whereClause = "WHERE status = 'Paid'";
@@ -27,9 +34,10 @@ try {
     switch ($period) {
         case 'monthly':
             // Show daily breakdown for this month
-            $whereClause .= " AND YEAR(created_at) = YEAR(CURRENT_DATE()) AND MONTH(created_at) = MONTH(CURRENT_DATE())";
+            // Use CURRENT_DATE() from SQL
+            $whereClause .= " AND YEAR($dateCol) = YEAR(CURRENT_DATE()) AND MONTH($dateCol) = MONTH(CURRENT_DATE())";
             $dateFormat = '%d %b'; // 01 Jan
-            $groupBy = "DATE(created_at)";
+            $groupBy = "DATE($dateCol)";
 
             // Generate all days for this month
             $numDays = date('t');
@@ -40,9 +48,9 @@ try {
 
         case 'yearly':
             // Show monthly breakdown for this year
-            $whereClause .= " AND YEAR(created_at) = YEAR(CURRENT_DATE())";
+            $whereClause .= " AND YEAR($dateCol) = YEAR(CURRENT_DATE())";
             $dateFormat = '%b'; // Jan
-            $groupBy = "MONTH(created_at)";
+            $groupBy = "MONTH($dateCol)";
 
             // Generate all months
             $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -52,39 +60,25 @@ try {
 
         case 'lifetime':
         default:
-            // Show monthly breakdown for all time? Or Yearly? 
-            // YouTube lifetime usually shows a long trend. Let's do Year-Month.
             $dateFormat = '%b %Y'; // Jan 2023
-            $groupBy = "DATE_FORMAT(created_at, '%Y-%m')";
-            // For lifetime, we don't pre-fill zeros because the range is dynamic
+            $groupBy = "DATE_FORMAT($dateCol, '%Y-%m')";
             break;
     }
 
-    if ($startDate && $endDate) {
-        // Custom range logic could be added here
-    }
-
-    // 2. Query Data Grouped by Currency and Date
-    // We need to fetch data for all currencies separately or grouped
     $sql = "
         SELECT 
-            DATE_FORMAT(created_at, '$dateFormat') as time_label,
+            DATE_FORMAT($dateCol, '$dateFormat') as time_label,
             currency,
             SUM(amount) as total
         FROM invoices
         $whereClause
         GROUP BY $groupBy, currency
-        ORDER BY created_at ASC
+        ORDER BY $dateCol ASC
     ";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
-    $data = $stmt->fetchAll(PDO::FETCH_GROUP); // Group by first column (time_label) invalid here as we have mulitple rows per label.
-    // fetchAll returns list.
-
     $rawData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // 3. Process Data for Chart.js
 
     // Identify all unique currencies involved
     $currencies = [];
@@ -98,12 +92,12 @@ try {
     $organized = [];
     $labels = array_keys($allDates); // Start with pre-filled dates if any
 
-    // If lifetime, we build labels dynamically
     if ($period == 'lifetime') {
         $labels = [];
         foreach ($rawData as $row) {
-            if (!in_array($row['time_label'], $labels)) {
-                $labels[] = $row['time_label'];
+            $lbl = $row['time_label'];
+            if (!in_array($lbl, $labels)) {
+                $labels[] = $lbl;
             }
         }
     }
@@ -119,7 +113,11 @@ try {
         $curr = $row['currency'];
         $val = (float) $row['total'];
 
+        // Handle case where label might not exist in pre-filled array (rare but possible with format mismatch)
         if (isset($organized[$curr][$lbl])) {
+            $organized[$curr][$lbl] = $val;
+        } else if ($period == 'lifetime') {
+            // Should be handled by label building above
             $organized[$curr][$lbl] = $val;
         }
     }
@@ -129,6 +127,7 @@ try {
         'USD' => ['border' => '#22c55e', 'bg' => 'rgba(34, 197, 94, 0.1)'],
         'INR' => ['border' => '#f59e0b', 'bg' => 'rgba(245, 158, 11, 0.1)'],
         'EUR' => ['border' => '#3b82f6', 'bg' => 'rgba(59, 130, 246, 0.1)'],
+        'GBP' => ['border' => '#8b5cf6', 'bg' => 'rgba(139, 92, 246, 0.1)'],
     ];
 
     $datasets = [];
@@ -137,14 +136,14 @@ try {
 
         $datasets[] = [
             'label' => $curr,
-            'data' => array_values($organized[$curr]), // Ensure matched by index with labels
+            'data' => array_values($organized[$curr]),
             'borderColor' => $color['border'],
             'backgroundColor' => $color['bg'],
             'borderWidth' => 2,
             'tension' => 0.4,
             'fill' => true,
-            'pointRadius' => 0,
-            'pointHoverRadius' => 4
+            'pointRadius' => 3,
+            'pointHoverRadius' => 6
         ];
     }
 
