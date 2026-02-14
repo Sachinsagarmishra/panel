@@ -211,43 +211,8 @@ include 'includes/header.php';
     </a>
 </div>
 
-<!-- Three Column Layout for Tables -->
+<!-- Dashboard Layout -->
 <div class="dashboard-grid fade-in">
-    <!-- Upcoming Deadlines -->
-    <div class="dashboard-card">
-        <div class="dashboard-card-header">
-            <h3>Upcoming Deadlines</h3>
-            <span class="card-subtitle">Next 7 Days</span>
-        </div>
-        <div class="dashboard-card-content">
-            <?php if (empty($upcomingDeadlines)): ?>
-                <div class="empty-state">
-                    <div class="empty-icon">🎉</div>
-                    <div class="empty-text">No upcoming deadlines!</div>
-                    <div class="empty-subtext">You're all caught up</div>
-                </div>
-            <?php else: ?>
-                <?php foreach ($upcomingDeadlines as $deadline): ?>
-                    <div class="deadline-item">
-                        <div class="deadline-info">
-                            <div class="deadline-title"><?php echo htmlspecialchars($deadline['title']); ?></div>
-                            <div class="deadline-client"><?php echo htmlspecialchars($deadline['client_name']); ?>
-                            </div>
-                        </div>
-                        <div class="deadline-date">
-                            <div class="date-text"><?php echo date('M j', strtotime($deadline['end_date'])); ?>
-                            </div>
-                            <span class="status-mini <?php echo strtolower(str_replace(' ', '-', $deadline['status'])); ?>">
-                                <?php echo $deadline['status']; ?>
-                            </span>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-    </div>
-
-
     <!-- Recent Clients -->
     <div class="dashboard-card">
         <div class="dashboard-card-header">
@@ -336,27 +301,14 @@ include 'includes/header.php';
         padding: 17px;
     }
 
-    .main-content {
-        background: #fafafa !important;
-    }
-
-    /* 6-Card Grid */
-    .stats-grid-6 {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-
-    /* Dashboard Grid for 3 columns */
+    /* Dashboard Layout */
     .dashboard-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1.5rem;
+        grid-template-columns: 1fr;
+        max-width: 600px;
         margin-top: 2rem;
     }
 
-    /* Dashboard Cards */
     .dashboard-card {
         background: white;
         border-radius: 12px;
@@ -367,11 +319,12 @@ include 'includes/header.php';
     .dashboard-card-header {
         padding: 1.5rem 1.5rem 1rem;
         border-bottom: 1px solid #f1f5f9;
+        background: white;
     }
 
     .dashboard-card-header h3 {
         font-size: 1.1rem;
-        font-weight: 600;
+        font-weight: 700;
         color: #1e293b;
         margin-bottom: 0.25rem;
     }
@@ -382,12 +335,78 @@ include 'includes/header.php';
     }
 
     .dashboard-card-content {
-        padding: 0;
-        max-height: 400px;
+        max-height: 500px;
         overflow-y: auto;
     }
 
-    /* Extra Responsive Fixes */
+    /* Client Item Styling - Custom and Premium */
+    .client-item {
+        display: flex;
+        align-items: center;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.2s ease;
+    }
+
+    .client-item:last-child {
+        border-bottom: none;
+    }
+
+    .client-item:hover {
+        background: #f8fafc;
+    }
+
+    .client-avatar {
+        width: 48px;
+        height: 48px;
+        background: #475569;
+        /* Dark grey like the screenshot */
+        color: #ffffff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.875rem;
+        margin-right: 1.25rem;
+        flex-shrink: 0;
+        border: 2px solid #e2e8f0;
+    }
+
+    .client-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .client-name {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .client-details {
+        color: #64748b;
+        font-size: 0.875rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .client-country {
+        font-size: 1.5rem;
+        margin-left: 1rem;
+    }
+
+    /* 6-Card Grid */
+    .stats-grid-6 {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Mobile Responsive Fixes */
     @media (max-width: 1400px) {
         .stats-grid-6 {
             grid-template-columns: repeat(3, 1fr);
@@ -400,7 +419,7 @@ include 'includes/header.php';
         }
 
         .dashboard-grid {
-            grid-template-columns: 1fr;
+            max-width: 100%;
         }
     }
 
