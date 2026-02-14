@@ -1,7 +1,8 @@
 <?php
-require_once 'includes/functions.php';
+require_once 'auth.php';
 checkAuth();
 require_once 'config/database.php';
+require_once 'includes/functions.php';
 
 // Handle Add/Edit Goal
 if (isset($_POST['save_goal'])) {
@@ -15,11 +16,13 @@ if (isset($_POST['save_goal'])) {
 
     try {
         if ($goal_id) {
-            $stmt = $pdo->prepare("UPDATE goals SET title = ?, description = ?, category = ?, priority = ?, target_date = ?, motivation_note = ? WHERE id = ?");
+            $stmt = $pdo->prepare("UPDATE goals SET title = ?, description = ?, category = ?, priority = ?, target_date = ?,
+motivation_note = ? WHERE id = ?");
             $stmt->execute([$title, $description, $category, $priority, $target_date, $motivation_note, $goal_id]);
             $msg = "Goal updated!";
         } else {
-            $stmt = $pdo->prepare("INSERT INTO goals (title, description, category, priority, target_date, motivation_note, status) VALUES (?, ?, ?, ?, ?, ?, 'Dreaming')");
+            $stmt = $pdo->prepare("INSERT INTO goals (title, description, category, priority, target_date, motivation_note, status)
+VALUES (?, ?, ?, ?, ?, ?, 'Dreaming')");
             $stmt->execute([$title, $description, $category, $priority, $target_date, $motivation_note]);
             $goal_id = $pdo->lastInsertId();
             $msg = "New goal added to your bucket list!";
@@ -27,8 +30,8 @@ if (isset($_POST['save_goal'])) {
 
         // Handle Milestones
         if (isset($_POST['milestones'])) {
-            // If editing, we might want to clear and re-add or sync. Simple approach: clear and re-add for now or handle specifically.
-            if ($_POST['goal_id']) {
+            // Simple approach: clear and re-add milestones if editing
+            if ($goal_id) {
                 $pdo->prepare("DELETE FROM goal_milestones WHERE goal_id = ?")->execute([$goal_id]);
             }
             $insM = $pdo->prepare("INSERT INTO goal_milestones (goal_id, title, is_completed) VALUES (?, ?, 0)");
@@ -86,7 +89,8 @@ if (isset($_GET['delete_goal'])) {
 }
 
 // Fetch Goals
-$goals = $pdo->query("SELECT * FROM goals ORDER BY FIELD(priority, 'High', 'Medium', 'Low'), target_date ASC")->fetchAll();
+$goals = $pdo->query("SELECT * FROM goals ORDER BY FIELD(priority, 'High', 'Medium', 'Low'), target_date
+ASC")->fetchAll();
 foreach ($goals as &$g) {
     $mStmt = $pdo->prepare("SELECT * FROM goal_milestones WHERE goal_id = ?");
     $mStmt->execute([$g['id']]);
