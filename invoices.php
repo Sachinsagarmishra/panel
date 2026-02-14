@@ -208,7 +208,7 @@ try {
     $params = [];
     if ($statusFilter) {
         if ($statusFilter === 'Recurring') {
-            $sql .= " AND i.invoice_number LIKE 'INV-R-%'";
+            $sql .= " AND (i.invoice_number LIKE 'INV-R-%' OR i.id IN (SELECT source_invoice_id FROM recurring_invoices WHERE status = 'active'))";
         } else {
             $sql .= " AND i.status = ?";
             $params[] = $statusFilter;

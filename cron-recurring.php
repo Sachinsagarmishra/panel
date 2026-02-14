@@ -35,7 +35,7 @@ function generateRecurringInvoices($pdo)
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Unpaid')
             ");
 
-            $due_date = date('Y-m-d', strtotime($r['next_date'] . ' + 7 days'));
+            $due_date = date('Y-m-d', strtotime($r['next_date'] . ' + 5 days'));
 
             $ins->execute([
                 $inv_no,
