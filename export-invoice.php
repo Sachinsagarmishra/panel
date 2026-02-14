@@ -79,6 +79,7 @@ if ($type === 'pdf') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice <?php echo htmlspecialchars($invoice['invoice_number']); ?></title>
+    <link rel="icon" type="image/png" href="https://sachindesign.com/assets/img/Sachin's%20photo.png">
     <style>
         * {
             margin: 0;
@@ -494,7 +495,7 @@ if ($type === 'pdf') {
             </div>
             <div class="header-right">
                 <div class="company-logo">
-                    <img src="https://sachindesign.com/assets/img/Favicon.png" alt="Sachin Logo" />
+                    <img src="https://sachindesign.com/assets/img/Sachin's%20photo.png" alt="Sachin Logo" />
                 </div>
                 <div class="company-name">Sachindesign.in</div>
                 <div class="currency-badge">
