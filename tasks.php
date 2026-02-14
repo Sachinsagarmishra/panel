@@ -73,11 +73,14 @@ try {
     // Calculate statistics
     $totalTasks = count($tasks);
     $todoTasks = count(array_filter($tasks, function ($task) {
-        return $task['status'] == 'Todo'; }));
+        return $task['status'] == 'Todo';
+    }));
     $inProgressTasks = count(array_filter($tasks, function ($task) {
-        return $task['status'] == 'In Progress'; }));
+        return $task['status'] == 'In Progress';
+    }));
     $completedTasks = count(array_filter($tasks, function ($task) {
-        return $task['status'] == 'Completed'; }));
+        return $task['status'] == 'Completed';
+    }));
     $overdueTasks = 0;
 
     foreach ($tasks as $task) {
@@ -353,7 +356,8 @@ foreach ($tasks as $task) {
                                 <?php if ($task['notes']): ?>
                                     <div class="card-notes">
                                         💭
-                                        <?php echo htmlspecialchars(substr($task['notes'], 0, 60)); ?>            <?php echo strlen($task['notes']) > 60 ? '...' : ''; ?>
+                                        <?php echo htmlspecialchars(substr($task['notes'], 0, 60)); ?>
+                                        <?php echo strlen($task['notes']) > 60 ? '...' : ''; ?>
                                     </div>
                                 <?php endif; ?>
 
@@ -438,19 +442,6 @@ foreach ($tasks as $task) {
             box-shadow: none;
         }
 
-        .stat-title {
-            color: #000000;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            letter-spacing: 0.5px;
-        }
-
-        .stat-change.positive {
-            color: #a1a1a1;
-            font-size: 12px;
-        }
-
         .stat-card::before {
             background: linear-gradient(135deg, #9a9a9a 0%, #000000 100%);
         }
@@ -464,105 +455,9 @@ foreach ($tasks as $task) {
             padding: 17px;
         }
 
-        .sidebar {
-            border-radius: 0px 20px 20px 0px;
-            width: 250px;
-            background: #ffffff;
-            padding: 1.5rem;
-            overflow-y: auto;
-            box-shadow: none;
-        }
-
-
-        .logo-icon img {
-            width: 40px;
-            /* ya jo bhi size chahiye */
-            height: auto;
-        }
-
-        .logo-icon {
-            background: #0000 !important;
-        }
-
         .main-content {
             background: #fafafa !important;
         }
-
-        .nav-item {
-            gap: 10px;
-            color: #000000;
-            margin-bottom: -0.75rem;
-            font-size: 14px;
-        }
-
-        .nav-item:hover {
-            padding: 8px 20px;
-        }
-
-        .nav-item.active {
-            background: #171717 !important;
-            color: #fff !important;
-            font-weight: 600 !important;
-        }
-
-        .nav-title {
-            color: #000000;
-            margin-bottom: 0px;
-        }
-
-        .header {
-            border: solid 1px #e5e7eb !important;
-            overflow: hidden;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            background: white;
-            box-shadow: none !important;
-            padding: 1.5rem !important;
-            border-radius: 12px !important;
-        }
-
-        .header h1 {
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .header p {
-            font-size: 12px;
-            margin-top: 0px;
-        }
-
-
-        .btn {
-            padding: 8px 20px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            box-shadow: none !important;
-            background: #171717;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: #f3f4f6;
-            color: #374151;
-        }
-
 
         /* 6-Card Grid */
         .stats-grid-6 {

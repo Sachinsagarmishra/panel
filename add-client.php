@@ -217,67 +217,9 @@ sort($countries);
 
     <style>
     
-    .sidebar {
-    border-radius: 0px 20px 20px 0px;
-    width: 250px;
-    background: #ffffff;
-    padding: 1.5rem;
-    overflow-y: auto;
-  box-shadow: none;
-}
-    
-    
-        .logo-icon img {
-    width: 40px;   /* ya jo bhi size chahiye */
-    height: auto;
-}
-
-.logo-icon {
-    background: #0000!important;}
-        
         .main-content {
-    background: #fafafa !important;
-}
-       .nav-item {
-    gap: 10px;
-    color: #000000;
-    margin-bottom: -0.75rem;
-    font-size: 14px;
-} 
-        .nav-item:hover {
-    padding: 8px 20px;
-}
-        .nav-item.active {
-    background: #171717;
-    color: #fff;
-    font-weight: 600;
-}
-
-.nav-title {
-    color: #000000;
-    margin-bottom: 0px;
-}
-        .header {
-    border: solid 1px #e5e7eb !important;
-    overflow: hidden;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    background: white;
-    box-shadow:none !important;
-    padding: 1.5rem !important;
-    border-radius: 12px !important;
-}
-
-.header h1 {
-    font-size: 16px;
-    font-weight: 600;
-}
-.header p {
-    font-size: 12px;
-    margin-top: 0px;
-}
+            background: #fafafa !important;
+        }
 
         .alert {
             padding: 1rem;

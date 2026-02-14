@@ -51,29 +51,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Responsive sidebar toggle for mobile
-    if (window.innerWidth <= 768) {
-        const sidebar = document.querySelector('.sidebar');
-        const mainContent = document.querySelector('.main-content');
-        
-        // Add toggle button for mobile
-        const toggleBtn = document.createElement('button');
-        toggleBtn.innerHTML = '☰';
-        toggleBtn.style.cssText = `
-            position: fixed; top: 1rem; left: 1rem; z-index: 1000;
-            background: #84cc16; border: none; border-radius: 8px;
-            padding: 0.5rem; color: black; font-size: 1.2rem;
-        `;
-        
-        toggleBtn.addEventListener('click', function() {
-            sidebar.style.transform = sidebar.style.transform === 'translateX(0px)' 
-                ? 'translateX(-100%)' : 'translateX(0px)';
-        });
-        
-        document.body.appendChild(toggleBtn);
-        sidebar.style.transform = 'translateX(-100%)';
-        sidebar.style.transition = 'transform 0.3s ease';
-    }
 });
 
 // Utility functions
