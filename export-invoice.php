@@ -745,7 +745,7 @@ if ($type === 'pdf') {
                                     <strong>Due Date:</strong> <?php echo date('M j, Y', strtotime($invoice['due_date'])); ?><br>
                                     <strong>PayPal Email:</strong> <?php echo htmlspecialchars($invoice['paypal_email']); ?><br>
                                     <?php if ($invoice['paypal_link']): ?>
-                                        <strong>PayPal Link:</strong> <a href="<?php echo htmlspecialchars($invoice['paypal_link']); ?>"><?php echo htmlspecialchars($invoice['paypal_link']); ?></a><br>
+                                        <strong>PayPal Link:</strong> <a href="<?php echo htmlspecialchars($invoice['paypal_link']); ?>" style="color: #f8b500; text-decoration: none;"><?php echo htmlspecialchars($invoice['paypal_link']); ?></a><br>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -763,7 +763,7 @@ if ($type === 'pdf') {
                                     <strong>UPI ID:</strong> <?php echo htmlspecialchars($invoice['upi_account_id']); ?><br>
                                     <div style="margin-top: 5px;">
                                         <strong>Bank Details:</strong><br>
-                                        <div style="font-size: 10px; color: #555;"><?php echo nl2br(htmlspecialchars($invoice['upi_bank_details'])); ?></div>
+                                        <div style="font-size: 10px; color: #f8b500; font-weight: 500;"><?php echo nl2br(htmlspecialchars($invoice['upi_bank_details'])); ?></div>
                                     </div>
                                 </div>
                             </div>
