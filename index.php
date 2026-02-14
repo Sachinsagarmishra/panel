@@ -53,17 +53,6 @@ try {
     ");
     $monthlyEarnings = $monthlyEarningsStmt->fetchAll();
 
-    // Upcoming deadlines (next 7 days)
-    $upcomingStmt = $pdo->query("
-        SELECT p.title, p.end_date, c.name as client_name, p.status
-        FROM projects p 
-        JOIN clients c ON p.client_id = c.id 
-        WHERE p.end_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-        AND p.status != 'Done'
-        ORDER BY p.end_date ASC
-        LIMIT 5
-    ");
-    $upcomingDeadlines = $upcomingStmt->fetchAll();
 
     // Recent clients (last 10)
     $recentClientsStmt = $pdo->query("
