@@ -324,18 +324,19 @@ include 'includes/header.php';
         </select>
     </div>
 
-    <div class="filter-group">
-        <a href="?status=Unpaid" class="btn btn-secondary">
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="?status=Unpaid" class="btn btn-secondary" title="View all unpaid invoices">
             <span>Pending Invoices</span>
         </a>
-        <a href="?status=Overdue" class="btn btn-secondary">
+        <a href="?status=Overdue" class="btn btn-secondary" title="View invoices past their due date">
             <span>Overdue Invoices</span>
         </a>
-        <a href="currencies.php" class="btn btn-secondary">
+        <a href="currencies.php" class="btn btn-secondary" title="Configure currencies and exchange rates">
             <span>Manage Currencies</span>
         </a>
         <a href="?status=Recurring"
-            class="btn btn-secondary <?php echo $statusFilter == 'Recurring' ? 'active' : ''; ?>">
+            class="btn btn-secondary <?php echo $statusFilter == 'Recurring' ? 'active' : ''; ?>" 
+            title="View all automated recurring invoices">
             <span>Recurring Invoices</span>
         </a>
     </div>
