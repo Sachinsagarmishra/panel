@@ -684,37 +684,33 @@ include 'includes/header.php';
                             </span>
                         </td>
                         <td>
-                            <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                            <div style="display: grid; grid-template-columns: repeat(3, 40px); gap: 0.5rem;">
                                 <!-- View/Export Actions -->
-                                <div style="display: flex; gap: 0.25rem;">
-                                    <button onclick="exportInvoiceToPDF(<?php echo $invoice['id']; ?>)"
-                                        class="action-btn btn-primary" title="Export PDF">
-                                        <i class="fa-regular fa-circle-down"></i>
-                                    </button>
-                                    <button onclick="viewInvoiceDetails(<?php echo $invoice['id']; ?>)"
-                                        class="action-btn btn-secondary" title="View Details">
-                                        <i class="fa-regular fa-eye"></i>
-                                    </button>
-                                    <button onclick="editInvoice(<?php echo $invoice['id']; ?>)" class="action-btn btn-primary"
-                                        title="Edit Invoice" style="background: #4f46e5;">
-                                        <i class="fa-regular fa-pen-to-square"></i>
-                                    </button>
-                                </div>
+                                <button onclick="exportInvoiceToPDF(<?php echo $invoice['id']; ?>)"
+                                    class="action-btn btn-primary" title="Export PDF">
+                                    <i class="fa-regular fa-circle-down"></i>
+                                </button>
+                                <button onclick="viewInvoiceDetails(<?php echo $invoice['id']; ?>)"
+                                    class="action-btn btn-secondary" title="View Details">
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
+                                <button onclick="editInvoice(<?php echo $invoice['id']; ?>)" class="action-btn btn-primary"
+                                    title="Edit Invoice" style="background: #4f46e5;">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </button>
 
                                 <!-- Status Actions -->
-                                <div style="display: flex; gap: 0.25rem;">
-                                    <?php if ($invoice['status'] != 'Paid'): ?>
-                                        <button onclick="markAsPaid(<?php echo $invoice['id']; ?>)" class="action-btn btn-success"
-                                            title="Mark as Paid">
-                                            <i class="fa-regular fa-thumbs-up"></i>
-                                        </button>
-                                    <?php else: ?>
-                                        <button onclick="markAsUnpaid(<?php echo $invoice['id']; ?>)" class="action-btn btn-warning"
-                                            title="Mark as Unpaid">
-                                            <i class="fa-regular fa-circle-xmark"></i>
-                                        </button>
-                                    <?php endif; ?>
-                                </div>
+                                <?php if ($invoice['status'] != 'Paid'): ?>
+                                    <button onclick="markAsPaid(<?php echo $invoice['id']; ?>)" class="action-btn btn-success"
+                                        title="Mark as Paid">
+                                        <i class="fa-regular fa-thumbs-up"></i>
+                                    </button>
+                                <?php else: ?>
+                                    <button onclick="markAsUnpaid(<?php echo $invoice['id']; ?>)" class="action-btn btn-warning"
+                                        title="Mark as Unpaid">
+                                        <i class="fa-regular fa-circle-xmark"></i>
+                                    </button>
+                                <?php endif; ?>
 
                                 <!-- Delete Action -->
                                 <button
