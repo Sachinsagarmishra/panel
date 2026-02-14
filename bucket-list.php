@@ -105,123 +105,122 @@ foreach ($goals as &$g) {
     $g['progress'] = $totalM > 0 ? round(($completedM / $totalM) * 100) : 0;
 }
 
-include 'includes/sidebar.php';
+include 'includes/header.php';
 ?>
 
-<div class="main-content">
-    <div class="header">
-        <div>
-            <h1>🪣 Advance Bucket List</h1>
-            <p>Dream big, plan smart, and track your achievements.</p>
-        </div>
-        <button onclick="openGoalModal()" class="btn btn-primary" style="background: #000;">
-            <i class="fas fa-plus"></i> Add New Goal
-        </button>
+<div class="header">
+    <div>
+        <h1>🪣 Advance Bucket List</h1>
+        <p>Dream big, plan smart, and track your achievements.</p>
     </div>
-
-    <?php if (isset($_GET['success'])): ?>
-        <div
-            style="background: #dcfce7; color: #166534; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #bbf7d0;">
-            ✅
-            <?php echo htmlspecialchars($_GET['success']); ?>
-        </div>
-    <?php endif; ?>
-
-    <!-- Goals Grid -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
-        <?php foreach ($goals as $g): ?>
-            <div id="goal-<?php echo $g['id']; ?>" class="stat-card"
-                style="display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem; background: white; border-radius: 16px; position: relative;">
-
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <span class="status <?php echo strtolower(str_replace(' ', '-', $g['status'])); ?>"
-                        style="font-size: 0.65rem;">
-                        <?php echo $g['status']; ?>
-                    </span>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button onclick='editGoal(<?php echo json_encode($g); ?>)'
-                            style="background: none; border: none; color: #64748b; cursor: pointer;" title="Edit">
-                            <i class="fas fa-pen-to-square"></i>
-                        </button>
-                        <a href="?delete_goal=<?php echo $g['id']; ?>" onclick="return confirm('Are you sure?')"
-                            style="color: #ef4444;" title="Delete">
-                            <i class="fas fa-trash-can"></i>
-                        </a>
-                    </div>
-                </div>
-
-                <div>
-                    <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.25rem; color: #1e293b;">
-                        <?php echo htmlspecialchars($g['title']); ?>
-                    </h3>
-                    <div
-                        style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.75rem; color: #64748b; margin-bottom: 0.5rem;">
-                        <span style="background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-weight: 600;">
-                            <?php echo $g['category']; ?>
-                        </span>
-                        <?php if ($g['target_date']): ?>
-                            <span><i class="far fa-calendar-alt"></i>
-                                <?php echo date('M j, Y', strtotime($g['target_date'])); ?>
-                            </span>
-                        <?php endif; ?>
-                        <span
-                            style="color: <?php echo $g['priority'] == 'High' ? '#ef4444' : ($g['priority'] == 'Medium' ? '#f59e0b' : '#10b981'); ?>; font-weight: 700;">
-                            <?php echo $g['priority']; ?> Priority
-                        </span>
-                    </div>
-                    <p style="font-size: 0.875rem; color: #64748b; line-height: 1.5;">
-                        <?php echo htmlspecialchars($g['description']); ?>
-                    </p>
-                </div>
-
-                <!-- Progress Bar -->
-                <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                        <span style="font-size: 0.75rem; font-weight: 600; color: #1e293b;">Progress</span>
-                        <span style="font-size: 0.75rem; font-weight: 700; color: #4f46e5;">
-                            <?php echo $g['progress']; ?>%
-                        </span>
-                    </div>
-                    <div style="width: 100%; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;">
-                        <div
-                            style="width: <?php echo $g['progress']; ?>%; height: 100%; background: linear-gradient(90deg, #4f46e5, #0ea5e9); transition: width 0.3s ease;">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Milestones List -->
-                <div style="background: #f8fafc; padding: 1rem; border-radius: 12px;">
-                    <h4
-                        style="font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-bottom: 0.75rem;">
-                        Milestones</h4>
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <?php foreach ($g['milestones'] as $m): ?>
-                            <a href="?toggle_milestone=<?php echo $m['id']; ?>&status=<?php echo $m['is_completed']; ?>"
-                                style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: <?php echo $m['is_completed'] ? '#94a3b8' : '#334155'; ?>; font-size: 0.875rem;">
-                                <i class="<?php echo $m['is_completed'] ? 'fas fa-check-circle' : 'far fa-circle'; ?>"
-                                    style="color: <?php echo $m['is_completed'] ? '#10b981' : '#cbd5e1'; ?>;"></i>
-                                <span style="<?php echo $m['is_completed'] ? 'text-decoration: line-through;' : ''; ?>">
-                                    <?php echo htmlspecialchars($m['title']); ?>
-                                </span>
-                            </a>
-                        <?php endforeach; ?>
-                        <?php if (empty($g['milestones'])): ?>
-                            <p style="font-size: 0.75rem; color: #94a3b8; font-style: italic;">No milestones added yet.</p>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <?php if ($g['motivation_note']): ?>
-                    <div
-                        style="font-size: 0.75rem; color: #64748b; background: #fffbeb; padding: 0.75rem; border-radius: 8px; border-left: 3px solid #f59e0b;">
-                        <strong>💡 Motivation:</strong>
-                        <?php echo htmlspecialchars($g['motivation_note']); ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-        <?php endforeach; ?>
-    </div>
+    <button onclick="openGoalModal()" class="btn btn-primary" style="background: #000;">
+        <i class="fas fa-plus"></i> Add New Goal
+    </button>
 </div>
+
+<?php if (isset($_GET['success'])): ?>
+    <div
+        style="background: #dcfce7; color: #166534; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #bbf7d0;">
+        ✅
+        <?php echo htmlspecialchars($_GET['success']); ?>
+    </div>
+<?php endif; ?>
+
+<!-- Goals Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+    <?php foreach ($goals as $g): ?>
+        <div id="goal-<?php echo $g['id']; ?>" class="stat-card"
+            style="display: flex; flex-direction: column; gap: 1rem; padding: 1.5rem; background: white; border-radius: 16px; position: relative;">
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <span class="status <?php echo strtolower(str_replace(' ', '-', $g['status'])); ?>"
+                    style="font-size: 0.65rem;">
+                    <?php echo $g['status']; ?>
+                </span>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button onclick='editGoal(<?php echo json_encode($g); ?>)'
+                        style="background: none; border: none; color: #64748b; cursor: pointer;" title="Edit">
+                        <i class="fas fa-pen-to-square"></i>
+                    </button>
+                    <a href="?delete_goal=<?php echo $g['id']; ?>" onclick="return confirm('Are you sure?')"
+                        style="color: #ef4444;" title="Delete">
+                        <i class="fas fa-trash-can"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <h3 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.25rem; color: #1e293b;">
+                    <?php echo htmlspecialchars($g['title']); ?>
+                </h3>
+                <div
+                    style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.75rem; color: #64748b; margin-bottom: 0.5rem;">
+                    <span style="background: #f1f5f9; padding: 2px 8px; border-radius: 4px; font-weight: 600;">
+                        <?php echo $g['category']; ?>
+                    </span>
+                    <?php if ($g['target_date']): ?>
+                        <span><i class="far fa-calendar-alt"></i>
+                            <?php echo date('M j, Y', strtotime($g['target_date'])); ?>
+                        </span>
+                    <?php endif; ?>
+                    <span
+                        style="color: <?php echo $g['priority'] == 'High' ? '#ef4444' : ($g['priority'] == 'Medium' ? '#f59e0b' : '#10b981'); ?>; font-weight: 700;">
+                        <?php echo $g['priority']; ?> Priority
+                    </span>
+                </div>
+                <p style="font-size: 0.875rem; color: #64748b; line-height: 1.5;">
+                    <?php echo htmlspecialchars($g['description']); ?>
+                </p>
+            </div>
+
+            <!-- Progress Bar -->
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.75rem; font-weight: 600; color: #1e293b;">Progress</span>
+                    <span style="font-size: 0.75rem; font-weight: 700; color: #4f46e5;">
+                        <?php echo $g['progress']; ?>%
+                    </span>
+                </div>
+                <div style="width: 100%; height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden;">
+                    <div
+                        style="width: <?php echo $g['progress']; ?>%; height: 100%; background: linear-gradient(90deg, #4f46e5, #0ea5e9); transition: width 0.3s ease;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Milestones List -->
+            <div style="background: #f8fafc; padding: 1rem; border-radius: 12px;">
+                <h4
+                    style="font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.05em; margin-bottom: 0.75rem;">
+                    Milestones</h4>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <?php foreach ($g['milestones'] as $m): ?>
+                        <a href="?toggle_milestone=<?php echo $m['id']; ?>&status=<?php echo $m['is_completed']; ?>"
+                            style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: <?php echo $m['is_completed'] ? '#94a3b8' : '#334155'; ?>; font-size: 0.875rem;">
+                            <i class="<?php echo $m['is_completed'] ? 'fas fa-check-circle' : 'far fa-circle'; ?>"
+                                style="color: <?php echo $m['is_completed'] ? '#10b981' : '#cbd5e1'; ?>;"></i>
+                            <span style="<?php echo $m['is_completed'] ? 'text-decoration: line-through;' : ''; ?>">
+                                <?php echo htmlspecialchars($m['title']); ?>
+                            </span>
+                        </a>
+                    <?php endforeach; ?>
+                    <?php if (empty($g['milestones'])): ?>
+                        <p style="font-size: 0.75rem; color: #94a3b8; font-style: italic;">No milestones added yet.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <?php if ($g['motivation_note']): ?>
+                <div
+                    style="font-size: 0.75rem; color: #64748b; background: #fffbeb; padding: 0.75rem; border-radius: 8px; border-left: 3px solid #f59e0b;">
+                    <strong>💡 Motivation:</strong>
+                    <?php echo htmlspecialchars($g['motivation_note']); ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endforeach; ?>
+</div>
+
 
 <!-- Add/Edit Goal Modal -->
 <div id="goalModal" class="form-modal" style="display: none;">
