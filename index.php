@@ -233,9 +233,23 @@ include 'includes/header.php';
     <div class="chart-header">
         <div class="header-content">
             <h3>Revenue Analytics</h3>
-            <div class="estimated-revenue">
-                <div class="revenue-label">Estimated Revenue</div>
-                <div class="revenue-value" id="estimatedRevenue">$0.00</div>
+            <div class="estimated-revenue stat-card"
+                style="background: none; border: none; padding: 0; box-shadow: none;">
+                <div class="stat-header" style="justify-content: flex-start; gap: 10px; margin-bottom: 0;">
+                    <div>
+                        <div class="revenue-label">Estimated Revenue</div>
+                        <div class="amount-wrapper masked">
+                            <div class="amount-actual">
+                                <div class="revenue-value" id="estimatedRevenue">$0.00</div>
+                            </div>
+                            <div class="amount-masked" style="margin-top: 0; font-size: 2rem; line-height: 1.2;">****
+                            </div>
+                        </div>
+                    </div>
+                    <button class="toggle-visibility" onclick="togglePrivacy(this)">
+                        <i class="fa-regular fa-eye-slash"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -246,41 +260,28 @@ include 'includes/header.php';
                     <i class="fas fa-chevron-down"></i>
                 </button>
                 <div class="filter-menu" id="filterMenu">
-                    <div class="filter-group">
-                        <div class="filter-item" onclick="selectFilter('last_7_days', 'Last 7 days')">Last 7 days</div>
-                        <div class="filter-item" onclick="selectFilter('last_28_days', 'Last 28 days')">Last 28 days
-                        </div>
-                        <div class="filter-item" onclick="selectFilter('last_90_days', 'Last 90 days')">Last 90 days
-                        </div>
-                        <div class="filter-item" onclick="selectFilter('last_365_days', 'Last 365 days')">Last 365 days
-                        </div>
-                        <div class="filter-item active" onclick="selectFilter('lifetime', 'Lifetime')">Lifetime</div>
-                    </div>
+                    <div class="filter-item" onclick="selectFilter('last_7_days', 'Last 7 days')">Last 7 days</div>
+                    <div class="filter-item" onclick="selectFilter('last_28_days', 'Last 28 days')">Last 28 days</div>
+                    <div class="filter-item" onclick="selectFilter('last_90_days', 'Last 90 days')">Last 90 days</div>
+                    <div class="filter-item" onclick="selectFilter('last_365_days', 'Last 365 days')">Last 365 days</div>
+                    <div class="filter-item active" onclick="selectFilter('lifetime', 'Lifetime')">Lifetime</div>
                     <div class="filter-divider"></div>
-                    <div class="filter-group year-group">
-                        <?php
-                        $currentYear = date('Y');
-                        for ($i = 0; $i < 3; $i++):
-                            $year = $currentYear - $i;
-                            ?>
-                            <div class="filter-item"
-                                onclick="selectFilter('year', '<?php echo $year; ?>', '<?php echo $year; ?>')">
-                                <?php echo $year; ?></div>
-                        <?php endfor; ?>
-                    </div>
+                    <?php
+                    $currentYear = date('Y');
+                    for ($i = 0; $i < 3; $i++):
+                        $year = $currentYear - $i;
+                        ?>
+                        <div class="filter-item" onclick="selectFilter('year', '<?php echo $year; ?>', '<?php echo $year; ?>')"><?php echo $year; ?></div>
+                    <?php endfor; ?>
                     <div class="filter-divider"></div>
-                    <div class="filter-group month-group">
-                        <?php
-                        // Show last 3 months
-                        for ($i = 0; $i < 3; $i++):
-                            $date = date('Y-m', strtotime("-$i months"));
-                            $label = date('F Y', strtotime("-$i months"));
-                            ?>
-                            <div class="filter-item"
-                                onclick="selectFilter('month', '<?php echo $label; ?>', '<?php echo $date; ?>')">
-                                <?php echo $label; ?></div>
-                        <?php endfor; ?>
-                    </div>
+                    <?php
+                    // Show last 3 months
+                    for ($i = 0; $i < 3; $i++):
+                        $date = date('Y-m', strtotime("-$i months"));
+                        $label = date('F Y', strtotime("-$i months"));
+                        ?>
+                        <div class="filter-item" onclick="selectFilter('month', '<?php echo $label; ?>', '<?php echo $date; ?>')"><?php echo $label; ?></div>
+                    <?php endfor; ?>
                     <div class="filter-divider"></div>
                     <div class="filter-item" onclick="showCustomRange()">Custom</div>
                 </div>
@@ -500,7 +501,7 @@ include 'includes/header.php';
         align-items: flex-start;
         margin-bottom: 2rem;
     }
-    
+
     .header-content h3 {
         font-size: 0.9rem;
         color: #64748b;
@@ -508,26 +509,26 @@ include 'includes/header.php';
         margin-bottom: 0.5rem;
         margin-top: 0;
     }
-    
+
     .estimated-revenue .revenue-label {
         font-size: 0.8rem;
         color: #64748b;
         font-weight: 500;
         margin-bottom: 2px;
     }
-    
+
     .estimated-revenue .revenue-value {
         font-size: 2rem;
         font-weight: 700;
         color: #0f172a;
         line-height: 1.2;
     }
-    
+
     /* Date Filter Dropdown */
     .date-filter-dropdown {
         position: relative;
     }
-    
+
     .filter-toggle {
         background: #f8fafc;
         border: 1px solid #e2e8f0;
@@ -542,12 +543,12 @@ include 'includes/header.php';
         gap: 8px;
         transition: all 0.2s;
     }
-    
+
     .filter-toggle:hover {
         background: #f1f5f9;
         border-color: #cbd5e1;
     }
-    
+
     .filter-menu {
         display: none;
         position: absolute;
@@ -562,7 +563,7 @@ include 'includes/header.php';
         z-index: 100;
         padding: 6px 0;
     }
-    
+
     .filter-item {
         padding: 8px 16px;
         font-size: 0.9rem;
@@ -570,18 +571,18 @@ include 'includes/header.php';
         cursor: pointer;
         transition: background 0.2s;
     }
-    
+
     .filter-item:hover {
         background: #f1f5f9;
         color: #0f172a;
     }
-    
+
     .filter-item.active {
         background: #eff6ff;
         color: #2563eb;
         font-weight: 500;
     }
-    
+
     .filter-divider {
         height: 1px;
         background: #e2e8f0;
@@ -593,22 +594,22 @@ include 'includes/header.php';
         height: 300px;
         width: 100%;
     }
-    
+
     @media (max-width: 640px) {
         .chart-header {
             flex-direction: column;
             gap: 1.5rem;
         }
-        
+
         .chart-controls {
             width: 100%;
         }
-        
+
         .filter-toggle {
             width: 100%;
             justify-content: space-between;
         }
-        
+
         .filter-menu {
             width: 100%;
         }
