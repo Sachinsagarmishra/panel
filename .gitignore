@@ -1,4 +1,1 @@
 .DS_Store
-config/database.php
-config/razorpay.php
-database/*.sql
