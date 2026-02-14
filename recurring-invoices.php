@@ -29,8 +29,9 @@ if (isset($_GET['toggle_status'])) {
     }
 }
 
-// Handle form submission (Simplified for now - can be expanded)
+// Handle form submission
 if ($_POST) {
+    $recurring_id = $_POST['recurring_id'] ?? null;
     $client_id = $_POST['client_id'];
     $frequency = $_POST['frequency'];
     $next_date = $_POST['next_date'];
@@ -42,9 +43,15 @@ if ($_POST) {
     try {
         $pdo->beginTransaction();
 
-        $stmt = $pdo->prepare("INSERT INTO recurring_invoices (client_id, frequency, next_date, amount, currency, notes, status) VALUES (?, ?, ?, ?, ?, ?, 'active')");
-        $stmt->execute([$client_id, $frequency, $next_date, $amount, $currency, $notes]);
-        $recurring_id = $pdo->lastInsertId();
+        if ($recurring_id) {
+            $stmt = $pdo->prepare("UPDATE recurring_invoices SET client_id = ?, frequency = ?, next_date = ?, amount = ?, currency = ?, notes = ? WHERE id = ?");
+            $stmt->execute([$client_id, $frequency, $next_date, $amount, $currency, $notes, $recurring_id]);
+            $pdo->prepare("DELETE FROM recurring_invoice_items WHERE recurring_id = ?")->execute([$recurring_id]);
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO recurring_invoices (client_id, frequency, next_date, amount, currency, notes, status) VALUES (?, ?, ?, ?, ?, ?, 'active')");
+            $stmt->execute([$client_id, $frequency, $next_date, $amount, $currency, $notes]);
+            $recurring_id = $pdo->lastInsertId();
+        }
 
         if (!empty($items)) {
             $itemStmt = $pdo->prepare("INSERT INTO recurring_invoice_items (recurring_id, description, quantity, rate, amount) VALUES (?, ?, ?, ?, ?)");
@@ -58,7 +65,8 @@ if ($_POST) {
         }
 
         $pdo->commit();
-        header("Location: recurring-invoices.php?success=Recurring invoice set up successfully!");
+        $msg = (isset($_POST['recurring_id']) && $_POST['recurring_id']) ? "updated" : "set up";
+        header("Location: recurring-invoices.php?success=Recurring invoice $msg successfully!");
         exit;
     } catch (PDOException $e) {
         $pdo->rollBack();
@@ -66,10 +74,16 @@ if ($_POST) {
     }
 }
 
-// Get recurring invoices
+// Get recurring invoices with items
 try {
     $stmt = $pdo->query("SELECT r.*, c.name as client_name FROM recurring_invoices r JOIN clients c ON r.client_id = c.id ORDER BY r.created_at DESC");
     $recurring_list = $stmt->fetchAll();
+
+    foreach ($recurring_list as &$r) {
+        $itemStmt = $pdo->prepare("SELECT * FROM recurring_invoice_items WHERE recurring_id = ?");
+        $itemStmt->execute([$r['id']]);
+        $r['items'] = $itemStmt->fetchAll();
+    }
 
     $clients = $pdo->query("SELECT id, name FROM clients ORDER BY name")->fetchAll();
     $currencies = $pdo->query("SELECT * FROM currencies WHERE is_active = 1")->fetchAll();
@@ -139,6 +153,9 @@ include 'includes/header.php';
                         </td>
                         <td>
                             <div style="display: flex; gap: 0.5rem;">
+                                <button onclick='editRecurring(<?php echo json_encode($r); ?>)' class="action-btn btn-secondary" title="Edit">
+                                    <i class="fa-regular fa-pen-to-square"></i>
+                                </button>
                                 <a href="?toggle_status=<?php echo $r['id']; ?>&current=<?php echo $r['status']; ?>"
                                     class="action-btn btn-secondary" title="Pause/Resume">
                                     <i class="fas fa-<?php echo $r['status'] == 'active' ? 'pause' : 'play'; ?>"></i>
@@ -160,10 +177,11 @@ include 'includes/header.php';
 <div id="recurringForm" class="form-modal" style="display: none;">
     <div class="form-content">
         <div class="form-header">
-            <h2>Setup Recurring Invoice</h2>
+            <h2 id="modalTitle">Setup Recurring Invoice</h2>
             <button onclick="toggleRecurringForm()" class="close-btn">×</button>
         </div>
-        <form method="POST" style="padding: 2rem;">
+        <form method="POST" id="mainForm" style="padding: 2rem;">
+            <input type="hidden" name="recurring_id" id="recurring_id">
             <div class="form-group">
                 <label class="form-label">Client</label>
                 <select name="client_id" class="form-select" required>
@@ -235,8 +253,63 @@ include 'includes/header.php';
 <script>
     function toggleRecurringForm() {
         const f = document.getElementById('recurringForm');
-        f.style.display = f.style.display === 'none' ? 'flex' : 'none';
-        document.body.style.overflow = f.style.display === 'none' ? 'auto' : 'hidden';
+        const isOpening = f.style.display === 'none';
+        
+        if (isOpening) {
+            // Reset form if opening for "New"
+            if (!f.dataset.isEditing) {
+                document.getElementById('mainForm').reset();
+                document.getElementById('recurring_id').value = '';
+                document.getElementById('modalTitle').innerText = 'Setup Recurring Invoice';
+                document.getElementById('itemsList').innerHTML = `
+                    <div class="item-row" style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <input type="text" name="items[0][description]" class="form-input" placeholder="Service description" required>
+                        <input type="number" name="items[0][quantity]" class="form-input" placeholder="Qty" value="1" onchange="calcTotal()">
+                        <input type="number" name="items[0][rate]" class="form-input" placeholder="Rate" onchange="calcTotal()">
+                    </div>
+                `;
+            }
+        } else {
+            delete f.dataset.isEditing;
+        }
+
+        f.style.display = isOpening ? 'flex' : 'none';
+        document.body.style.overflow = isOpening ? 'hidden' : 'auto';
+    }
+
+    function editRecurring(data) {
+        const f = document.getElementById('recurringForm');
+        f.dataset.isEditing = "true";
+        
+        document.getElementById('modalTitle').innerText = 'Edit Recurring Invoice';
+        document.getElementById('recurring_id').value = data.id;
+        document.querySelector('select[name="client_id"]').value = data.client_id;
+        document.querySelector('select[name="frequency"]').value = data.frequency;
+        document.querySelector('input[name="next_date"]').value = data.next_date;
+        document.querySelector('input[name="amount"]').value = data.amount;
+        document.querySelector('select[name="currency"]').value = data.currency;
+
+        // Populate Items
+        const list = document.getElementById('itemsList');
+        list.innerHTML = '';
+        if (data.items && data.items.length > 0) {
+            data.items.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'item-row';
+                div.style = 'display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;';
+                div.innerHTML = `
+                    <input type="text" name="items[${index}][description]" class="form-input" placeholder="Service description" value="${item.description}" required>
+                    <input type="number" name="items[${index}][quantity]" class="form-input" placeholder="Qty" value="${item.quantity}" onchange="calcTotal()">
+                    <input type="number" name="items[${index}][rate]" class="form-input" placeholder="Rate" value="${item.rate}" onchange="calcTotal()">
+                `;
+                list.appendChild(div);
+            });
+            itemIndex = data.items.length;
+        } else {
+            addItem();
+        }
+
+        toggleRecurringForm();
     }
 
     let itemIndex = 1;
