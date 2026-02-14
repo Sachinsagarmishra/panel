@@ -83,61 +83,49 @@ $currencies = $pdo->query("SELECT * FROM currencies WHERE is_active=1")->fetchAl
 ?>
 
 
-<!DOCTYPE html>
-<html>
+<?php
+$page_title = 'Create Payment Link';
+include 'includes/header.php';
+?>
 
-<head>
-    <title>Create Payment Link</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="https://sachindesign.com/assets/img/Sachin's%20photo.png">
-    <link href="assets/style.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+    .form-card {
+        max-width: 760px;
+        background: #fff;
+        border-radius: 16px;
+        padding: 30px;
+        margin-top: 20px;
+    }
 
-    <style>
-        .form-card {
-            max-width: 760px;
-            background: #fff;
-            border-radius: 16px;
-            padding: 30px;
-            margin-top: 20px;
-        }
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
 
+    .form-group label {
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 6px;
+        display: block;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 30px;
+    }
+
+    @media (max-width: 768px) {
         .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: 1fr;
         }
-
-        .form-group label {
-            font-weight: 600;
-            font-size: 13px;
-            margin-bottom: 6px;
-            display: block;
-        }
-
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-top: 30px;
-        }
-
-        @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="container">
-
-        <!-- ================= SIDEBAR ================= -->
-        <?php include 'includes/sidebar.php'; ?>
-
-        <main class="main-content">
+    }
+</style>
+<?php
+// Note: header.php handles opening body, container, sidebar and main-content
+?>
 
             <header class="header">
                 <div>
@@ -213,6 +201,4 @@ $currencies = $pdo->query("SELECT * FROM currencies WHERE is_active=1")->fetchAl
         </main>
     </div>
 
-</body>
-
-</html>
+<?php include "includes/footer.php"; ?>
