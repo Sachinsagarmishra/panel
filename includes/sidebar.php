@@ -5,7 +5,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <div class="mobile-header">
     <div class="logo">
         <div class="logo-icon">
-            <img src="https://sachindesign.com/assets/img/Sachin's%20photo.png" alt="Logo Icon" />
+            <img src="assets/Sachin.png" alt="Logo Icon" />
         </div>
         <div class="logo-text">Sachindesign</div>
     </div>
@@ -21,7 +21,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <nav class="sidebar" id="sidebar">
     <div class="logo d-none-mobile">
         <div class="logo-icon">
-            <img src="https://sachindesign.com/assets/img/Sachin's%20photo.png" alt="Logo Icon" />
+            <img src="assets/Sachin.png" alt="Logo Icon" />
         </div>
         <div class="logo-text">Sachindesign</div>
     </div>

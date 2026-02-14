@@ -12,7 +12,7 @@ if (!isset($page_title)) {
     <title>
         <?php echo $page_title; ?>
     </title>
-    <link rel="icon" type="image/png" href="https://sachindesign.com/assets/img/Sachin's%20photo.png">
+    <link rel="icon" type="image/png" href="assets/Sachin.png">
     <link href="assets/style.css" rel="stylesheet">
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
