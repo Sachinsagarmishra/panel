@@ -231,30 +231,161 @@ include 'includes/header.php';
 <!-- Revenue Analytics Chart -->
 <div class="chart-container fade-in" style="margin-bottom: 2rem;">
     <div class="chart-header">
-        <h3>Revenue Analytics</h3>
-        <div class="chart-filters">
-            <button class="filter-btn active" onclick="updateChart('lifetime')">Lifetime</button>
-            <button class="filter-btn" onclick="updateChart('yearly')">Yearly</button>
-            <button class="filter-btn" onclick="updateChart('monthly')">Monthly</button>
+        <div class="header-content">
+            <h3>Revenue Analytics</h3>
+            <div class="estimated-revenue">
+                <div class="revenue-label">Estimated Revenue</div>
+                <div class="revenue-value" id="estimatedRevenue">$0.00</div>
+            </div>
+        </div>
+
+        <div class="chart-controls">
+            <div class="date-filter-dropdown">
+                <button class="filter-toggle" onclick="toggleFilterMenu()">
+                    <span id="currentFilterLabel">Lifetime</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="filter-menu" id="filterMenu">
+                    <div class="filter-group">
+                        <div class="filter-item" onclick="selectFilter('last_7_days', 'Last 7 days')">Last 7 days</div>
+                        <div class="filter-item" onclick="selectFilter('last_28_days', 'Last 28 days')">Last 28 days
+                        </div>
+                        <div class="filter-item" onclick="selectFilter('last_90_days', 'Last 90 days')">Last 90 days
+                        </div>
+                        <div class="filter-item" onclick="selectFilter('last_365_days', 'Last 365 days')">Last 365 days
+                        </div>
+                        <div class="filter-item active" onclick="selectFilter('lifetime', 'Lifetime')">Lifetime</div>
+                    </div>
+                    <div class="filter-divider"></div>
+                    <div class="filter-group year-group">
+                        <?php
+                        $currentYear = date('Y');
+                        for ($i = 0; $i < 3; $i++):
+                            $year = $currentYear - $i;
+                            ?>
+                            <div class="filter-item"
+                                onclick="selectFilter('year', '<?php echo $year; ?>', '<?php echo $year; ?>')">
+                                <?php echo $year; ?></div>
+                        <?php endfor; ?>
+                    </div>
+                    <div class="filter-divider"></div>
+                    <div class="filter-group month-group">
+                        <?php
+                        // Show last 3 months
+                        for ($i = 0; $i < 3; $i++):
+                            $date = date('Y-m', strtotime("-$i months"));
+                            $label = date('F Y', strtotime("-$i months"));
+                            ?>
+                            <div class="filter-item"
+                                onclick="selectFilter('month', '<?php echo $label; ?>', '<?php echo $date; ?>')">
+                                <?php echo $label; ?></div>
+                        <?php endfor; ?>
+                    </div>
+                    <div class="filter-divider"></div>
+                    <div class="filter-item" onclick="showCustomRange()">Custom</div>
+                </div>
+            </div>
         </div>
     </div>
+
     <div class="chart-wrapper">
         <canvas id="revenueChart"></canvas>
+    </div>
+</div>
+
+<!-- Custom Range Modal -->
+<div id="customRangeModal" class="form-modal" style="display: none;">
+    <div class="form-content" style="max-width: 400px;">
+        <h3>Select Date Range</h3>
+        <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" id="customStart" class="form-input">
+        </div>
+        <div class="form-group">
+            <label>End Date</label>
+            <input type="date" id="customEnd" class="form-input">
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn btn-primary" onclick="applyCustomRange()">Apply</button>
+            <button class="btn btn-secondary"
+                onclick="document.getElementById('customRangeModal').style.display='none'">Cancel</button>
+        </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     let revenueChart = null;
+    let currentPeriod = 'lifetime';
+    let currentVal = null; // For year/month
 
-    async function updateChart(period) {
-        // Update active button state
-        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    function toggleFilterMenu() {
+        const menu = document.getElementById('filterMenu');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function (event) {
+        const dropdown = document.querySelector('.date-filter-dropdown');
+        const menu = document.getElementById('filterMenu');
+        if (dropdown && !dropdown.contains(event.target)) {
+            menu.style.display = 'none';
+        }
+    });
+
+    function selectFilter(period, label, val = null) {
+        document.getElementById('currentFilterLabel').innerText = label;
+        document.getElementById('filterMenu').style.display = 'none';
+
+        // Update active class
+        document.querySelectorAll('.filter-item').forEach(el => el.classList.remove('active'));
         event.target.classList.add('active');
 
+        currentPeriod = period;
+        currentVal = val;
+
+        if (period === 'custom') return; // Handled by showCustomRange() separately if clicked directly
+
+        updateChart(period, val);
+    }
+
+    function showCustomRange() {
+        document.getElementById('filterMenu').style.display = 'none';
+        document.getElementById('customRangeModal').style.display = 'flex';
+    }
+
+    function applyCustomRange() {
+        const start = document.getElementById('customStart').value;
+        const end = document.getElementById('customEnd').value;
+
+        if (!start || !end) {
+            alert('Please select both dates');
+            return;
+        }
+
+        document.getElementById('customRangeModal').style.display = 'none';
+        document.getElementById('currentFilterLabel').innerText = 'Custom Range';
+        updateChart('custom', null, start, end);
+    }
+
+    async function updateChart(period, val = null, start = null, end = null) {
+        // Construct query
+        let url = `get-revenue-data.php?period=${period}`;
+        if (val) url += `&val=${val}`;
+        if (start && end) url += `&start=${start}&end=${end}`;
+
         try {
-            const response = await fetch(`get-revenue-data.php?period=${period}`);
+            const response = await fetch(url);
             const data = await response.json();
+
+            // Update Estimated Revenue Display
+            const revEl = document.getElementById('estimatedRevenue');
+            if (data.totals && data.totals.length > 0) {
+                // Combine formatted totals e.g. "$100.00 + ₹2000.00"
+                revEl.innerText = data.totals.map(t => t.formatted).join(' + ');
+            } else {
+                revEl.innerText = '$0.00';
+            }
 
             if (revenueChart) {
                 revenueChart.destroy();
@@ -272,22 +403,31 @@ include 'includes/header.php';
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                boxWidth: 8
-                            }
+                            display: false // Hide legend to match screenshot clean look? Or keep it? Screenshot doesn't show multiple lines.
+                            // Keeping it for multi-currency support
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            backgroundColor: 'white',
                             titleColor: '#1e293b',
                             bodyColor: '#1e293b',
                             borderColor: '#e2e8f0',
                             borderWidth: 1,
-                            padding: 10,
-                            displayColors: true
+                            padding: 12,
+                            displayColors: true,
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: context.dataset.label }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -298,7 +438,10 @@ include 'includes/header.php';
                                 borderDash: [5, 5]
                             },
                             ticks: {
-                                color: '#64748b',
+                                callback: function (value) {
+                                    return value.toLocaleString(); // Format Y axis
+                                },
+                                color: '#94a3b8',
                                 font: { size: 11 }
                             }
                         },
@@ -307,8 +450,9 @@ include 'includes/header.php';
                                 display: false
                             },
                             ticks: {
-                                color: '#64748b',
-                                font: { size: 11 }
+                                color: '#94a3b8',
+                                font: { size: 11 },
+                                maxTicksLimit: 9 // Limit X axis labels
                             }
                         }
                     },
@@ -316,6 +460,15 @@ include 'includes/header.php';
                         mode: 'nearest',
                         axis: 'x',
                         intersect: false
+                    },
+                    elements: {
+                        line: {
+                            tension: 0
+                        },
+                        point: {
+                            radius: 0,
+                            hoverRadius: 6
+                        }
                     }
                 }
             });
