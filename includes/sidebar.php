@@ -71,8 +71,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <div class="nav-title">Settings</div>
         <a href="bank-accounts.php"
             class="nav-item <?php echo $current_page == 'bank-accounts.php' ? 'active' : ''; ?>">
-            <span class="nav-item-icon"><i class="fa-regular fa-gem"></i></span>
+            <span class="nav-item-icon"><i class="fa-solid fa-bank"></i></span>
             <span>Bank Accounts</span>
+        </a>
+        <a href="paypal-methods.php"
+            class="nav-item <?php echo $current_page == 'paypal-methods.php' ? 'active' : ''; ?>">
+            <span class="nav-item-icon"><i class="fab fa-paypal"></i></span>
+            <span>PayPal</span>
+        </a>
+        <a href="upi-methods.php" class="nav-item <?php echo $current_page == 'upi-methods.php' ? 'active' : ''; ?>">
+            <span class="nav-item-icon"><i class="fas fa-qrcode"></i></span>
+            <span>UPI Methods</span>
         </a>
         <a href="currencies.php" class="nav-item <?php echo $current_page == 'currencies.php' ? 'active' : ''; ?>">
             <span class="nav-item-icon">💱</span>

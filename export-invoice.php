@@ -15,13 +15,17 @@ try {
     // Get invoice details with client, project, and currency info
     $stmt = $pdo->prepare("
         SELECT i.*, c.name as client_name, c.email as client_email, c.phone as client_phone,
-               c.brand_name, p.title as project_title, ba.account_name, ba.bank_name, 
-               ba.account_number, ba.ifsc_code, ba.upi_id, ba.custom_fields as bank_custom_fields,
+               c.brand_name, p.title as project_title, 
+               ba.account_name, ba.bank_name, ba.account_number, ba.ifsc_code, ba.upi_id as bank_upi_id, ba.custom_fields as bank_custom_fields,
+               pm.email as paypal_email, pm.link as paypal_link,
+               um.upi_id as upi_account_id, um.qr_code as upi_qr_code, um.bank_details as upi_bank_details,
                curr.symbol as currency_symbol, curr.name as currency_name, curr.code as currency_code
         FROM invoices i 
         JOIN clients c ON i.client_id = c.id 
         LEFT JOIN projects p ON i.project_id = p.id
         LEFT JOIN bank_accounts ba ON i.bank_account = ba.id
+        LEFT JOIN paypal_methods pm ON i.paypal_account = pm.id
+        LEFT JOIN upi_methods um ON i.upi_account = um.id
         LEFT JOIN currencies curr ON i.currency = curr.code
         WHERE i.id = ?
     ");
@@ -682,7 +686,7 @@ if ($type === 'pdf') {
                         <!--<strong>Currency:</strong> <?php echo htmlspecialchars($invoice['currency_code']); ?> (<?php echo htmlspecialchars($invoice['currency_name']); ?>)<br>-->
                         <!--<strong>Amount Due:</strong> <?php echo htmlspecialchars($invoice['currency_symbol']); ?><?php echo number_format($invoice['amount'], 2); ?><br>-->
                         
-                        <?php if ($invoice['account_name']): ?>
+                        <?php if ($invoice['payment_mode'] == 'Bank Transfer' && $invoice['account_name']): ?>
                             <div class="payment-grid">
                                 <div class="payment-column">
                                     <strong>Payment Method:</strong> Bank Transfer<br>
@@ -700,12 +704,8 @@ if ($type === 'pdf') {
                                         <strong>IFSC Code:</strong> <?php echo htmlspecialchars($invoice['ifsc_code']); ?><br>
                                     <?php endif; ?>
                                     
-                                    <?php if ($invoice['upi_id']): ?>
-                                        <strong>UPI ID:</strong> <?php echo htmlspecialchars($invoice['upi_id']); ?><br>
-                                    <?php endif; ?>
-                                    
-                                    <?php if ($invoice['payment_mode']): ?>
-                                        <strong>Preferred Mode:</strong> <?php echo htmlspecialchars($invoice['payment_mode']); ?><br>
+                                    <?php if ($invoice['bank_upi_id']): ?>
+                                        <strong>UPI ID:</strong> <?php echo htmlspecialchars($invoice['bank_upi_id']); ?><br>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -737,7 +737,37 @@ if ($type === 'pdf') {
                                     </div>
                                 </div>
                             <?php endif; ?>
-                            
+
+                        <?php elseif ($invoice['payment_mode'] == 'PayPal' && $invoice['paypal_email']): ?>
+                            <div class="payment-grid">
+                                <div class="payment-column">
+                                    <strong>Payment Method:</strong> PayPal<br>
+                                    <strong>Due Date:</strong> <?php echo date('M j, Y', strtotime($invoice['due_date'])); ?><br>
+                                    <strong>PayPal Email:</strong> <?php echo htmlspecialchars($invoice['paypal_email']); ?><br>
+                                    <?php if ($invoice['paypal_link']): ?>
+                                        <strong>PayPal Link:</strong> <a href="<?php echo htmlspecialchars($invoice['paypal_link']); ?>"><?php echo htmlspecialchars($invoice['paypal_link']); ?></a><br>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                        <?php elseif ($invoice['payment_mode'] == 'UPI' && $invoice['upi_account_id']): ?>
+                            <div class="payment-grid" style="display: flex; gap: 20px; align-items: flex-start;">
+                                <?php if ($invoice['upi_qr_code']): ?>
+                                <div style="flex-shrink: 0;">
+                                    <img src="<?php echo htmlspecialchars($invoice['upi_qr_code']); ?>" style="width: 100px; height: 100px; border: 1px solid #eee; border-radius: 4px;">
+                                </div>
+                                <?php endif; ?>
+                                <div class="payment-column" style="flex: 1;">
+                                    <strong>Payment Method:</strong> UPI Transfer<br>
+                                    <strong>Due Date:</strong> <?php echo date('M j, Y', strtotime($invoice['due_date'])); ?><br>
+                                    <strong>UPI ID:</strong> <?php echo htmlspecialchars($invoice['upi_account_id']); ?><br>
+                                    <div style="margin-top: 5px;">
+                                        <strong>Bank Details:</strong><br>
+                                        <div style="font-size: 10px; color: #555;"><?php echo nl2br(htmlspecialchars($invoice['upi_bank_details'])); ?></div>
+                                    </div>
+                                </div>
+                            </div>
+
                         <?php else: ?>
                             <strong>Payment Method:</strong> <?php echo $invoice['payment_mode'] ? htmlspecialchars($invoice['payment_mode']) : 'Bank Transfer'; ?><br>
                             <strong>Due Date:</strong> <?php echo date('M j, Y', strtotime($invoice['due_date'])); ?>

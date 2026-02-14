@@ -17,6 +17,8 @@ if ($_POST) {
     $currency = $_POST['currency'] ?? 'USD';
     $payment_mode = trim($_POST['payment_mode']);
     $bank_account = $_POST['bank_account'] ?? null;
+    $paypal_account = $_POST['paypal_account'] ?? null;
+    $upi_account = $_POST['upi_account'] ?? null;
     $notes = trim($_POST['notes']);
 
     try {
@@ -25,10 +27,10 @@ if ($_POST) {
 
         // Insert invoice
         $stmt = $pdo->prepare("
-            INSERT INTO invoices (invoice_number, client_id, project_id, issue_date, due_date, amount, currency, payment_mode, bank_account, notes) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO invoices (invoice_number, client_id, project_id, issue_date, due_date, amount, currency, payment_mode, bank_account, paypal_account, upi_account, notes) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
-        $stmt->execute([$invoice_number, $client_id, $project_id, $issue_date, $due_date, $total_amount, $currency, $payment_mode, $bank_account, $notes]);
+        $stmt->execute([$invoice_number, $client_id, $project_id, $issue_date, $due_date, $total_amount, $currency, $payment_mode, $bank_account, $paypal_account, $upi_account, $notes]);
 
         $invoiceId = $pdo->lastInsertId();
 
@@ -283,7 +285,7 @@ include 'includes/header.php';
 
                     <div class="form-group">
                         <label class="form-label" for="payment_mode">Payment Mode</label>
-                        <select id="payment_mode" name="payment_mode" class="form-select">
+                        <select id="payment_mode" name="payment_mode" class="form-select" onchange="togglePaymentFields()">
                             <option value="">Select Mode...</option>
                             <option value="Bank Transfer">Bank Transfer</option>
                             <option value="PayPal">PayPal</option>
@@ -291,14 +293,38 @@ include 'includes/header.php';
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="bank_account">Bank Account</label>
+                    <div class="form-group payment-field bank-field" style="display: none;">
+                        <label class="form-label" for="bank_account">Bank Account *</label>
                         <select id="bank_account" name="bank_account" class="form-select">
-                            <option value="">Select Account...</option>
+                            <option value="">Select Bank Account...</option>
                             <?php foreach ($bankAccounts as $account): ?>
                                 <option value="<?php echo $account['id']; ?>">
                                     <?php echo htmlspecialchars($account['account_name']); ?> -
                                     <?php echo htmlspecialchars($account['bank_name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group payment-field paypal-field" style="display: none;">
+                        <label class="form-label" for="paypal_account">PayPal Account *</label>
+                        <select id="paypal_account" name="paypal_account" class="form-select">
+                            <option value="">Select PayPal...</option>
+                            <?php foreach ($paypalMethods as $method): ?>
+                                <option value="<?php echo $method['id']; ?>">
+                                    <?php echo htmlspecialchars($method['account_name']); ?> (<?php echo htmlspecialchars($method['email']); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="form-group payment-field upi-field" style="display: none;">
+                        <label class="form-label" for="upi_account">UPI Account *</label>
+                        <select id="upi_account" name="upi_account" class="form-select">
+                            <option value="">Select UPI...</option>
+                            <?php foreach ($upiMethods as $method): ?>
+                                <option value="<?php echo $method['id']; ?>">
+                                    <?php echo htmlspecialchars($method['account_name']); ?> (<?php echo htmlspecialchars($method['upi_id']); ?>)
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -444,7 +470,8 @@ include 'includes/header.php';
                         </td>
                         <td>
                             <div style="font-weight: 700; font-size: 1.25rem; color: #059669;">
-                                <?php echo ($invoice['currency_symbol'] ?? '$'); ?>        <?php echo number_format($invoice['amount'], 2); ?>
+                                <?php echo ($invoice['currency_symbol'] ?? '$'); ?>
+                                <?php echo number_format($invoice['amount'], 2); ?>
                             </div>
                             <div style="color: #64748b; font-size: 0.75rem;">
                                 <?php echo ($invoice['currency'] ?? 'USD'); ?>
@@ -841,6 +868,20 @@ include 'includes/header.php';
     const projects = <?php echo json_encode($projects); ?>;
     let itemIndex = 0;
 
+    function togglePaymentFields() {
+        const mode = document.getElementById('payment_mode').value;
+        const allFields = document.querySelectorAll('.payment-field');
+        allFields.forEach(f => f.style.display = 'none');
+
+        if (mode === 'Bank Transfer') {
+            document.querySelector('.bank-field').style.display = 'block';
+        } else if (mode === 'PayPal') {
+            document.querySelector('.paypal-field').style.display = 'block';
+        } else if (mode === 'UPI') {
+            document.querySelector('.upi-field').style.display = 'block';
+        }
+    }
+
     function toggleInvoiceForm() {
         const form = document.getElementById('invoiceForm');
         const isVisible = form.style.display !== 'none';
@@ -855,6 +896,7 @@ include 'includes/header.php';
             generateNewInvoiceNumber();
             updateCurrencySymbol();
             calculateTotal();
+            togglePaymentFields();
         }
     }
 
