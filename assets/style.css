@@ -9,6 +9,8 @@ body {
     background: #f8fafc;
     color: #1e293b;
     line-height: 1.6;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 .container {
@@ -48,6 +50,15 @@ body {
     font-size: 1.5rem;
     cursor: pointer;
     color: #1e293b;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+}
+
+.menu-toggle:focus {
+    outline: none;
 }
 
 .sidebar-overlay {
@@ -322,9 +333,10 @@ body {
 .table-container {
     background: white;
     border-radius: 16px;
-    overflow: hidden;
+    overflow-x: auto;
     border: 1px solid #e2e8f0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    -webkit-overflow-scrolling: touch;
 }
 
 .table-header {
@@ -630,8 +642,16 @@ body {
 
 /* Responsive Design */
 @media (max-width: 1024px) {
+    .container {
+        flex-direction: column;
+    }
+
     .sidebar {
-        left: -250px;
+        left: -280px;
+        width: 280px;
+        z-index: 2000;
+        top: 0;
+        height: 100vh;
     }
 
     .sidebar.active {
@@ -640,15 +660,33 @@ body {
 
     .sidebar-overlay.active {
         display: block;
+        z-index: 1999;
     }
 
     .mobile-header {
         display: flex;
+        width: 100%;
+        height: 60px;
+        background: white;
+        padding: 0 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        position: sticky;
+        top: 0;
+        z-index: 1001;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .mobile-header .logo {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
     }
 
     .main-content {
         margin-left: 0 !important;
         padding: 1rem;
+        width: 100%;
     }
 
     .d-none-mobile {
@@ -658,6 +696,7 @@ body {
     .stats-grid,
     .stats-grid-6 {
         grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem;
     }
 }
 
@@ -689,6 +728,33 @@ body {
 
     .logo-text {
         font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mobile-header {
+        padding: 0 0.8rem;
+    }
+
+    .logo-text {
+        font-size: 13px;
+    }
+
+    .logo-icon {
+        width: 30px;
+        height: 30px;
+    }
+
+    .logo-icon img {
+        width: 24px;
+    }
+
+    .main-content {
+        padding: 0.75rem;
+    }
+
+    .header {
+        padding: 1rem !important;
     }
 }
 
