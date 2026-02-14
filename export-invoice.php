@@ -83,7 +83,7 @@ if ($type === 'pdf') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice <?php echo htmlspecialchars($invoice['invoice_number']); ?></title>
-    <link rel="icon" type="image/png" href="https://sachindesign.com/assets/img/Sachin's%20photo.png">
+    <link rel="icon" type="image/png" href="assets/Sachin.png">
     <style>
         * {
             margin: 0;
