@@ -95,6 +95,61 @@ if ($_POST) {
     }
 }
 
+// Handle Recurring Setup
+if (isset($_POST['setup_recurring'])) {
+    $source_invoice_id = $_POST['source_invoice_id'];
+    $frequency = $_POST['frequency'] ?? 'monthly';
+    $next_date = $_POST['next_date'];
+
+    try {
+        $pdo->beginTransaction();
+
+        // Get source invoice details
+        $stmt = $pdo->prepare("SELECT * FROM invoices WHERE id = ?");
+        $stmt->execute([$source_invoice_id]);
+        $source = $stmt->fetch();
+
+        if ($source) {
+            // Insert into recurring_invoices
+            $recStmt = $pdo->prepare("INSERT INTO recurring_invoices (client_id, project_id, frequency, next_date, amount, currency, payment_mode, bank_account, paypal_account, upi_account, notes, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')");
+            $recStmt->execute([
+                $source['client_id'],
+                $source['project_id'],
+                $frequency,
+                $next_date,
+                $source['amount'],
+                $source['currency'],
+                $source['payment_mode'],
+                $source['bank_account'],
+                $source['paypal_account'],
+                $source['upi_account'],
+                $source['notes']
+            ]);
+            $recurring_id = $pdo->lastInsertId();
+
+            // Copy items
+            $itemStmt = $pdo->prepare("SELECT * FROM invoice_items WHERE invoice_id = ?");
+            $itemStmt->execute([$source_invoice_id]);
+            $items = $itemStmt->fetchAll();
+
+            $insItem = $pdo->prepare("INSERT INTO recurring_invoice_items (recurring_id, description, quantity, rate, amount) VALUES (?, ?, ?, ?, ?)");
+            foreach ($items as $item) {
+                $insItem->execute([$recurring_id, $item['description'], $item['quantity'], $item['rate'], $item['amount']]);
+            }
+
+            // Flag the original invoice as having a recurring schedule (optional, but good for UI)
+            // For now, we'll just commit.
+        }
+
+        $pdo->commit();
+        header("Location: invoices.php?success=Recurring automation activated for this invoice!");
+        exit;
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        $error = "Error: " . $e->getMessage();
+    }
+}
+
 // Pagination logic
 $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $limit = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 10;
@@ -632,6 +687,12 @@ include 'includes/header.php';
                                     class="action-btn btn-danger" title="Delete Invoice">
                                     <i class="fa-regular fa-trash-can"></i>️
                                 </button>
+
+                                <!-- Recurring Action -->
+                                <button onclick="openRecurringModal(<?php echo $invoice['id']; ?>, '<?php echo htmlspecialchars($invoice['invoice_number']); ?>')" 
+                                        class="action-btn" title="Make Recurring" style="background: #8b5cf6; color: white;">
+                                    <i class="fas fa-arrows-rotate"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -641,6 +702,57 @@ include 'includes/header.php';
     </table>
     <?php renderPagination($totalInvoicesCount, $limit, $page); ?>
 </div>
+
+<!-- Recurring Activation Modal -->
+<div id="recurringModal" class="form-modal" style="display: none;">
+    <div class="form-content" style="max-width: 450px;">
+        <div class="form-header">
+            <h2>🔄 Activate Automation</h2>
+            <button type="button" onclick="closeRecurringModal()" class="close-btn">✕</button>
+        </div>
+        <form method="POST" style="padding: 2rem;">
+            <input type="hidden" name="setup_recurring" value="1">
+            <input type="hidden" name="source_invoice_id" id="recurring_invoice_id">
+            
+            <p style="margin-bottom: 1.5rem; color: #64748b; line-height: 1.5;">
+                This will create a new recurring schedule using the details from Invoice <strong id="recurring_invoice_num"></strong>.
+            </p>
+
+            <div class="form-group">
+                <label class="form-label">Frequency</label>
+                <select name="frequency" class="form-select">
+                    <option value="weekly">Every Week</option>
+                    <option value="monthly" selected>Every Month</option>
+                    <option value="yearly">Every Year</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Next Invoice Date</label>
+                <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Pick the day of the month for automated creation.</p>
+                <input type="date" name="next_date" class="form-input" required value="<?php echo date('Y-m-d'); ?>">
+            </div>
+
+            <div class="form-actions" style="margin-top: 2rem;">
+                <button type="button" onclick="closeRecurringModal()" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="background: #8b5cf6;">Activate Now</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openRecurringModal(id, num) {
+    document.getElementById('recurring_invoice_id').value = id;
+    document.getElementById('recurring_invoice_num').innerText = num;
+    document.getElementById('recurringModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+function closeRecurringModal() {
+    document.getElementById('recurringModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+</script>
 </main>
 </div>
 

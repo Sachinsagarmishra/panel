@@ -53,11 +53,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <span class="nav-item-icon"><i class="fa-regular fa-chess-king"></i></span>
             <span>Invoices</span>
         </a>
-        <a href="recurring-invoices.php"
-            class="nav-item <?php echo $current_page == 'recurring-invoices.php' ? 'active' : ''; ?>">
-            <span class="nav-item-icon"><i class="fas fa-arrows-rotate"></i></span>
-            <span>Recurring Invoices</span>
-        </a>
         <a href="paymentlink.php" class="nav-item <?php echo $current_page == 'paymentlink.php' ? 'active' : ''; ?>">
             <span class="nav-item-icon"><i class="fa-solid fa-link"></i></span>
             <span>Payment Link</span>
