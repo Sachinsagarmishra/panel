@@ -54,6 +54,12 @@ include 'includes/header.php';
     <button onclick="togglePasswordForm()" class="btn btn-primary">
         <span>Add Password</span>
     </button>
+
+    <style>
+        .stat-card::before {
+            background: linear-gradient(135deg, #9a9a9a 0%, #000000 100%);
+        }
+    </style>
 </header>
 
 <!-- Statistics Cards -->
@@ -64,7 +70,6 @@ include 'includes/header.php';
                 <div class="stat-title">Total Passwords</div>
                 <div class="stat-value"><?php echo $totalPasswords; ?></div>
             </div>
-            <div class="stat-icon">🔐</div>
         </div>
     </div>
 
@@ -74,7 +79,6 @@ include 'includes/header.php';
                 <div class="stat-title">Added This Month</div>
                 <div class="stat-value"><?php echo $thisMonthPasswords; ?></div>
             </div>
-            <div class="stat-icon">📅</div>
         </div>
     </div>
 
@@ -84,7 +88,6 @@ include 'includes/header.php';
                 <div class="stat-title">Security Status</div>
                 <div class="stat-value" style="font-size: 1.5rem; color: #059669;">Safe</div>
             </div>
-            <div class="stat-icon">🛡️</div>
         </div>
     </div>
 
@@ -94,7 +97,6 @@ include 'includes/header.php';
                 <div class="stat-title">Quick Access</div>
                 <div class="stat-value" style="font-size: 1.5rem;">Ready</div>
             </div>
-            <div class="stat-icon">⚡</div>
         </div>
     </div>
 </div>
