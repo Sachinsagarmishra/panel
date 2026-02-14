@@ -6,30 +6,45 @@ require_once 'config/database.php';
 // Handle search
 $search = $_GET['search'] ?? '';
 
-// Get clients with search functionality
-$sql = "SELECT * FROM clients WHERE 1=1";
-$params = [];
+// Pagination logic
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$limit = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 10;
+$offset = ($page - 1) * $limit;
 
+// Get ALL clients for statistics and count
+$statsSql = "SELECT * FROM clients WHERE 1=1";
+$statsParams = [];
 if ($search) {
-    $sql .= " AND (name LIKE ? OR email LIKE ? OR brand_name LIKE ? OR country LIKE ?)";
+    $statsSql .= " AND (name LIKE ? OR email LIKE ? OR brand_name LIKE ? OR country LIKE ?)";
     $searchTerm = "%$search%";
-    $params = [$searchTerm, $searchTerm, $searchTerm, $searchTerm];
+    $statsParams = [$searchTerm, $searchTerm, $searchTerm, $searchTerm];
 }
 
-$sql .= " ORDER BY created_at DESC";
-
 try {
+    $statsStmt = $pdo->prepare($statsSql);
+    $statsStmt->execute($statsParams);
+    $allClientsForStats = $statsStmt->fetchAll();
+    $totalClientsCount = count($allClientsForStats);
+
+    // Get paginated clients
+    $sql = "SELECT * FROM clients WHERE 1=1";
+    $params = [];
+    if ($search) {
+        $sql .= " AND (name LIKE ? OR email LIKE ? OR brand_name LIKE ? OR country LIKE ?)";
+        $params = [$searchTerm, $searchTerm, $searchTerm, $searchTerm];
+    }
+    $sql .= " ORDER BY created_at DESC LIMIT $limit OFFSET $offset";
+
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $clients = $stmt->fetchAll();
 
-    // Calculate statistics
-    $totalClients = count($clients);
-    $countries = array_unique(array_column($clients, 'country'));
+    // Calculate statistics using allClientsForStats
+    $totalClients = count($allClientsForStats);
+    $countries = array_unique(array_column($allClientsForStats, 'country'));
     $countriesCount = count(array_filter($countries));
-
-    // Get most common country
-    $countryStats = array_count_values(array_filter(array_column($clients, 'country')));
+    $countryStats = array_count_values(array_filter(array_column($allClientsForStats, 'country')));
+    arsort($countryStats);
     $topCountry = $countryStats ? array_keys($countryStats)[0] : 'N/A';
 
 } catch (PDOException $e) {
@@ -88,7 +103,7 @@ include 'includes/header.php';
 <div class="table-container fade-in">
     <div class="table-header">
         <div class="table-title">
-            <span>All Clients (<?php echo count($clients); ?>)</span>
+            <span>All Clients (<?php echo $totalClientsCount; ?>)</span>
         </div>
     </div>
 
@@ -232,6 +247,7 @@ include 'includes/header.php';
             <?php endif; ?>
         </tbody>
     </table>
+    <?php renderPagination($totalClientsCount, $limit, $page); ?>
 </div>
 </main>
 </div>

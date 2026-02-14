@@ -6,22 +6,39 @@ require_once 'config/database.php';
 // Handle client filter
 $clientFilter = $_GET['client_id'] ?? '';
 
-// Get projects with client info
-$sql = "
-    SELECT p.*, c.name as client_name, c.brand_name, c.email as client_email
-    FROM projects p 
-    JOIN clients c ON p.client_id = c.id
-";
+// Pagination logic
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$limit = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 10;
+$offset = ($page - 1) * $limit;
 
-$params = [];
+// Get ALL projects for statistics and count
+$statsSql = "SELECT * FROM projects p WHERE 1=1";
+$statsParams = [];
 if ($clientFilter) {
-    $sql .= " WHERE p.client_id = ?";
-    $params[] = $clientFilter;
+    $statsSql .= " AND p.client_id = ?";
+    $statsParams[] = $clientFilter;
 }
 
-$sql .= " ORDER BY p.created_at DESC";
-
 try {
+    $statsStmt = $pdo->prepare($statsSql);
+    $statsStmt->execute($statsParams);
+    $allProjectsForStats = $statsStmt->fetchAll();
+    $totalProjectsCount = count($allProjectsForStats);
+
+    // Get paginated projects
+    $sql = "
+        SELECT p.*, c.name as client_name, c.brand_name, c.email as client_email
+        FROM projects p 
+        JOIN clients c ON p.client_id = c.id
+        WHERE 1=1
+    ";
+    $params = [];
+    if ($clientFilter) {
+        $sql .= " AND p.client_id = ?";
+        $params[] = $clientFilter;
+    }
+    $sql .= " ORDER BY p.created_at DESC LIMIT $limit OFFSET $offset";
+
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $projects = $stmt->fetchAll();
@@ -30,15 +47,15 @@ try {
     $clientsStmt = $pdo->query("SELECT id, name, brand_name FROM clients ORDER BY name");
     $allClients = $clientsStmt->fetchAll();
 
-    // Calculate statistics
-    $totalProjects = count($projects);
-    $activeProjects = count(array_filter($projects, function ($p) {
+    // Calculate statistics using allProjectsForStats
+    $totalProjects = count($allProjectsForStats);
+    $activeProjects = count(array_filter($allProjectsForStats, function ($p) {
         return $p['status'] == 'In Progress';
     }));
-    $completedProjects = count(array_filter($projects, function ($p) {
+    $completedProjects = count(array_filter($allProjectsForStats, function ($p) {
         return $p['status'] == 'Done';
     }));
-    $ideaProjects = count(array_filter($projects, function ($p) {
+    $ideaProjects = count(array_filter($allProjectsForStats, function ($p) {
         return $p['status'] == 'Idea';
     }));
 
@@ -157,7 +174,7 @@ include 'includes/header.php';
 <div class="table-container fade-in">
     <div class="table-header">
         <div class="table-title">
-            <span>All Projects (<?php echo count($projects); ?>)</span>
+            <span>All Projects (<?php echo $totalProjectsCount; ?>)</span>
         </div>
     </div>
 
@@ -298,6 +315,7 @@ include 'includes/header.php';
             <?php endif; ?>
         </tbody>
     </table>
+    <?php renderPagination($totalProjectsCount, $limit, $page); ?>
 </div>
 </main>
 </div>

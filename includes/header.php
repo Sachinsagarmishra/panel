@@ -2,6 +2,7 @@
 if (!isset($page_title)) {
     $page_title = 'Sachindesign Dashboard';
 }
+require_once 'functions.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">

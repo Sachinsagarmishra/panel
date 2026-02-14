@@ -26,14 +26,25 @@ if ($_POST) {
     }
 }
 
-// Get all passwords
+// Pagination logic
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$limit = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 10;
+$offset = ($page - 1) * $limit;
+
+// Get ALL passwords for statistics and count
 try {
-    $passwordsStmt = $pdo->query("SELECT * FROM passwords ORDER BY created_at DESC");
+    $allPasswordsStmt = $pdo->query("SELECT * FROM passwords ORDER BY created_at DESC");
+    $allPasswordsForStats = $allPasswordsStmt->fetchAll();
+    $totalPasswordsCount = count($allPasswordsForStats);
+
+    // Get paginated passwords
+    $passwordsStmt = $pdo->prepare("SELECT * FROM passwords ORDER BY created_at DESC LIMIT $limit OFFSET $offset");
+    $passwordsStmt->execute();
     $passwords = $passwordsStmt->fetchAll();
 
-    // Calculate statistics
-    $totalPasswords = count($passwords);
-    $thisMonthPasswords = count(array_filter($passwords, function ($pass) {
+    // Calculate statistics using allPasswordsForStats
+    $totalPasswords = count($allPasswordsForStats);
+    $thisMonthPasswords = count(array_filter($allPasswordsForStats, function ($pass) {
         return strpos($pass['created_at'], date('Y-m')) === 0;
     }));
 
@@ -181,7 +192,7 @@ include 'includes/header.php';
 <div class="table-container fade-in">
     <div class="table-header">
         <div class="table-title">
-            <span>Stored Passwords (<?php echo count($passwords); ?>)</span>
+            <span>Stored Passwords (<?php echo $totalPasswordsCount; ?>)</span>
         </div>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search passwords..." class="search-input">
@@ -291,6 +302,7 @@ include 'includes/header.php';
             <?php endif; ?>
         </tbody>
     </table>
+    <?php renderPagination($totalPasswordsCount, $limit, $page); ?>
 </div>
 </main>
 </div>

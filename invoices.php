@@ -95,27 +95,50 @@ if ($_POST) {
     }
 }
 
-// Get invoices with filters
-$sql = "
-    SELECT i.*, c.name as client_name, c.email as client_email, c.brand_name as client_brand,
-           p.title as project_title, ba.account_name, ba.bank_name,
-           curr.symbol as currency_symbol, curr.name as currency_name
+// Pagination logic
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$limit = isset($_GET['limit']) ? max(1, intval($_GET['limit'])) : 10;
+$offset = ($page - 1) * $limit;
+
+// Get ALL invoices for statistics and count
+$statsSql = "
+    SELECT i.*, curr.symbol as currency_symbol
     FROM invoices i 
-    JOIN clients c ON i.client_id = c.id 
-    LEFT JOIN projects p ON i.project_id = p.id
-    LEFT JOIN bank_accounts ba ON i.bank_account = ba.id
     LEFT JOIN currencies curr ON i.currency = curr.code
     WHERE 1=1
 ";
-
-$params = [];
+$statsParams = [];
 if ($statusFilter) {
-    $sql .= " AND i.status = ?";
-    $params[] = $statusFilter;
+    $statsSql .= " AND i.status = ?";
+    $statsParams[] = $statusFilter;
 }
-$sql .= " ORDER BY i.created_at DESC";
 
 try {
+    $statsStmt = $pdo->prepare($statsSql);
+    $statsStmt->execute($statsParams);
+    $allInvoicesForStats = $statsStmt->fetchAll();
+    $totalInvoicesCount = count($allInvoicesForStats);
+
+    // Get invoices with pagination
+    $sql = "
+        SELECT i.*, c.name as client_name, c.email as client_email, c.brand_name as client_brand,
+               p.title as project_title, ba.account_name, ba.bank_name,
+               curr.symbol as currency_symbol, curr.name as currency_name
+        FROM invoices i 
+        JOIN clients c ON i.client_id = c.id 
+        LEFT JOIN projects p ON i.project_id = p.id
+        LEFT JOIN bank_accounts ba ON i.bank_account = ba.id
+        LEFT JOIN currencies curr ON i.currency = curr.code
+        WHERE 1=1
+    ";
+
+    $params = [];
+    if ($statusFilter) {
+        $sql .= " AND i.status = ?";
+        $params[] = $statusFilter;
+    }
+    $sql .= " ORDER BY i.created_at DESC LIMIT $limit OFFSET $offset";
+
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $invoices = $stmt->fetchAll();
@@ -152,13 +175,13 @@ try {
     $currenciesStmt = $pdo->query("SELECT * FROM currencies WHERE is_active = 1 ORDER BY code");
     $activeCurrencies = $currenciesStmt->fetchAll();
 
-    // Calculate statistics by currency
+    // Calculate statistics by currency using allInvoicesForStats
     $totalAmount = [];
     $paidAmount = [];
     $unpaidCount = 0;
     $overdueCount = 0;
 
-    foreach ($invoices as $invoice) {
+    foreach ($allInvoicesForStats as $invoice) {
         $currency = $invoice['currency'] ?? 'USD';
         $symbol = $invoice['currency_symbol'] ?? '$';
 
@@ -179,7 +202,6 @@ try {
             $overdueCount++;
         }
     }
-
 } catch (PDOException $e) {
     $error = "Error: " . $e->getMessage();
 }
@@ -458,7 +480,7 @@ include 'includes/header.php';
 <div class="table-container fade-in">
     <div class="table-header">
         <div class="table-title">
-            <span>All Invoices (<?php echo count($invoices); ?>)</span>
+            <span>All Invoices (<?php echo $totalInvoicesCount; ?>)</span>
         </div>
     </div>
 
@@ -617,6 +639,7 @@ include 'includes/header.php';
             <?php endif; ?>
         </tbody>
     </table>
+    <?php renderPagination($totalInvoicesCount, $limit, $page); ?>
 </div>
 </main>
 </div>
