@@ -3,6 +3,15 @@ require_once 'auth.php';
 checkAuth();
 require_once 'config/database.php';
 
+// Silent check for recurring invoices
+try {
+    ob_start();
+    include 'cron-recurring.php';
+    ob_end_clean();
+} catch (Exception $e) {
+    // Ignore
+}
+
 // Handle delete
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
@@ -153,7 +162,8 @@ include 'includes/header.php';
                         </td>
                         <td>
                             <div style="display: flex; gap: 0.5rem;">
-                                <button onclick='editRecurring(<?php echo json_encode($r); ?>)' class="action-btn btn-secondary" title="Edit">
+                                <button onclick='editRecurring(<?php echo json_encode($r); ?>)' class="action-btn btn-secondary"
+                                    title="Edit">
                                     <i class="fa-regular fa-pen-to-square"></i>
                                 </button>
                                 <a href="?toggle_status=<?php echo $r['id']; ?>&current=<?php echo $r['status']; ?>"
@@ -254,7 +264,7 @@ include 'includes/header.php';
     function toggleRecurringForm() {
         const f = document.getElementById('recurringForm');
         const isOpening = f.style.display === 'none';
-        
+
         if (isOpening) {
             // Reset form if opening for "New"
             if (!f.dataset.isEditing) {
@@ -280,7 +290,7 @@ include 'includes/header.php';
     function editRecurring(data) {
         const f = document.getElementById('recurringForm');
         f.dataset.isEditing = "true";
-        
+
         document.getElementById('modalTitle').innerText = 'Edit Recurring Invoice';
         document.getElementById('recurring_id').value = data.id;
         document.querySelector('select[name="client_id"]').value = data.client_id;
