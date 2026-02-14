@@ -68,6 +68,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
     </div>
 
     <div class="nav-section">
+        <div class="nav-title">Growth</div>
+        <a href="bucket-list.php" class="nav-item <?php echo $current_page == 'bucket-list.php' ? 'active' : ''; ?>">
+            <span class="nav-item-icon"><i class="fas fa-bucket"></i></span>
+            <span>Bucket List</span>
+        </a>
+    </div>
+
+    <div class="nav-section">
         <div class="nav-title">Settings</div>
         <a href="bank-accounts.php"
             class="nav-item <?php echo $current_page == 'bank-accounts.php' ? 'active' : ''; ?>">
