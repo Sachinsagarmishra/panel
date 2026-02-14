@@ -3,6 +3,15 @@ require_once 'auth.php';
 checkAuth();
 require_once 'config/database.php';
 
+// Silent check for recurring invoices
+try {
+    ob_start();
+    include 'cron-recurring.php';
+    ob_end_clean();
+} catch (Exception $e) {
+    // Ignore errors in background check
+}
+
 // Get dashboard statistics
 try {
     // Total clients
@@ -274,7 +283,8 @@ include 'includes/header.php';
                         ?>
                         <div class="filter-item"
                             onclick="selectFilter('year', '<?php echo $year; ?>', '<?php echo $year; ?>')">
-                            <?php echo $year; ?></div>
+                            <?php echo $year; ?>
+                        </div>
                     <?php endfor; ?>
                     <div class="filter-divider"></div>
                     <?php
@@ -285,7 +295,8 @@ include 'includes/header.php';
                         ?>
                         <div class="filter-item"
                             onclick="selectFilter('month', '<?php echo $label; ?>', '<?php echo $date; ?>')">
-                            <?php echo $label; ?></div>
+                            <?php echo $label; ?>
+                        </div>
                     <?php endfor; ?>
                     <div class="filter-divider"></div>
                     <div class="filter-item" onclick="showCustomRange()">Custom</div>
