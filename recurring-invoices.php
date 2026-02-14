@@ -74,6 +74,12 @@ if ($_POST) {
         }
 
         $pdo->commit();
+
+        // RUN GENERATOR IMMEDIATELY
+        if (function_exists('generateRecurringInvoices')) {
+            generateRecurringInvoices($pdo);
+        }
+
         $msg = (isset($_POST['recurring_id']) && $_POST['recurring_id']) ? "updated" : "set up";
         header("Location: recurring-invoices.php?success=Recurring invoice $msg successfully!");
         exit;
