@@ -485,7 +485,7 @@ include 'includes/header.php';
 </script>
 
 <style>
-    /* Chart Container Styling */
+    /* New Styles for Graph */
     .chart-container {
         background: white;
         border-radius: 16px;
@@ -497,49 +497,95 @@ include 'includes/header.php';
     .chart-header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        flex-wrap: wrap;
-        gap: 1rem;
+        align-items: flex-start;
+        margin-bottom: 2rem;
     }
-
-    .chart-header h3 {
-        font-size: 1.1rem;
+    
+    .header-content h3 {
+        font-size: 0.9rem;
+        color: #64748b;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        margin-top: 0;
+    }
+    
+    .estimated-revenue .revenue-label {
+        font-size: 0.8rem;
+        color: #64748b;
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+    
+    .estimated-revenue .revenue-value {
+        font-size: 2rem;
         font-weight: 700;
         color: #0f172a;
-        margin: 0;
+        line-height: 1.2;
     }
-
-    .chart-filters {
-        display: flex;
-        gap: 0.5rem;
-        background: #f1f5f9;
-        padding: 4px;
+    
+    /* Date Filter Dropdown */
+    .date-filter-dropdown {
+        position: relative;
+    }
+    
+    .filter-toggle {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 8px 16px;
         border-radius: 8px;
-    }
-
-    .filter-btn {
-        background: none;
-        border: none;
-        padding: 6px 12px;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
+        color: #475569;
         font-weight: 500;
-        color: #64748b;
-        border-radius: 6px;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
         transition: all 0.2s;
     }
-
-    .filter-btn:hover {
-        color: #1e293b;
-        background: rgba(255, 255, 255, 0.5);
+    
+    .filter-toggle:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
     }
-
-    .filter-btn.active {
+    
+    .filter-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 8px;
         background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        width: 200px;
+        z-index: 100;
+        padding: 6px 0;
+    }
+    
+    .filter-item {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+        color: #334155;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .filter-item:hover {
+        background: #f1f5f9;
         color: #0f172a;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        font-weight: 600;
+    }
+    
+    .filter-item.active {
+        background: #eff6ff;
+        color: #2563eb;
+        font-weight: 500;
+    }
+    
+    .filter-divider {
+        height: 1px;
+        background: #e2e8f0;
+        margin: 4px 0;
     }
 
     .chart-wrapper {
@@ -547,21 +593,24 @@ include 'includes/header.php';
         height: 300px;
         width: 100%;
     }
-
-    @media (max-width: 768px) {
+    
+    @media (max-width: 640px) {
         .chart-header {
             flex-direction: column;
-            align-items: flex-start;
+            gap: 1.5rem;
         }
-
-        .chart-filters {
+        
+        .chart-controls {
+            width: 100%;
+        }
+        
+        .filter-toggle {
             width: 100%;
             justify-content: space-between;
         }
-
-        .filter-btn {
-            flex: 1;
-            text-align: center;
+        
+        .filter-menu {
+            width: 100%;
         }
     }
 </style>
