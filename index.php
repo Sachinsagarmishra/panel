@@ -54,14 +54,6 @@ try {
     $monthlyEarnings = $monthlyEarningsStmt->fetchAll();
 
 
-    // Recent clients (last 10)
-    $recentClientsStmt = $pdo->query("
-        SELECT name, brand_name, email, country, created_at
-        FROM clients
-        ORDER BY created_at DESC
-        LIMIT 8
-    ");
-    $recentClients = $recentClientsStmt->fetchAll();
 
 } catch (PDOException $e) {
     $error = "Error: " . $e->getMessage();
@@ -226,58 +218,6 @@ include 'includes/header.php';
     </a>
 </div>
 
-<!-- Dashboard Layout -->
-<div class="dashboard-grid fade-in">
-    <!-- Recent Clients -->
-    <div class="dashboard-card">
-        <div class="dashboard-card-header">
-            <h3>Recent Clients</h3>
-            <span class="card-subtitle">New additions</span>
-        </div>
-        <div class="dashboard-card-content">
-            <?php if (empty($recentClients)): ?>
-                <div class="empty-state">
-                    <div class="empty-text">No clients yet!</div>
-                    <div class="empty-subtext">Add your first client</div>
-                </div>
-            <?php else: ?>
-                <?php foreach ($recentClients as $client): ?>
-                    <div class="client-item">
-                        <div class="client-avatar">
-                            <?php echo strtoupper(substr($client['name'], 0, 2)); ?>
-                        </div>
-                        <div class="client-info">
-                            <div class="client-name"><?php echo htmlspecialchars($client['name']); ?></div>
-                            <div class="client-details">
-                                <?php if ($client['brand_name']): ?>
-                                    <?php echo htmlspecialchars($client['brand_name']); ?>
-                                <?php else: ?>
-                                    <?php echo htmlspecialchars($client['email']); ?>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <div class="client-country">
-                            <?php
-                            $countryFlags = [
-                                'India' => '🇮🇳',
-                                'United States' => '🇺🇸',
-                                'United Kingdom' => '🇬🇧',
-                                'Canada' => '🇨🇦',
-                                'Australia' => '🇦🇺',
-                                'Germany' => '🇩🇪',
-                                'France' => '🇫🇷',
-                                'Singapore' => '🇸🇬',
-                                'UAE' => '🇦🇪'
-                            ];
-                            echo $countryFlags[$client['country']] ?? '🌍';
-                            ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
-    </div>
-</div>
 </main>
 </div>
 
@@ -316,102 +256,6 @@ include 'includes/header.php';
         padding: 17px;
     }
 
-    /* Dashboard Layout */
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        max-width: 600px;
-        margin-top: 2rem;
-    }
-
-    .dashboard-card {
-        background: white;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        overflow: hidden;
-    }
-
-    .dashboard-card-header {
-        padding: 1.5rem 1.5rem 1rem;
-        border-bottom: 1px solid #f1f5f9;
-        background: white;
-    }
-
-    .dashboard-card-header h3 {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 0.25rem;
-    }
-
-    .card-subtitle {
-        font-size: 0.875rem;
-        color: #64748b;
-    }
-
-    .dashboard-card-content {
-        max-height: 500px;
-        overflow-y: auto;
-    }
-
-    /* Client Item Styling - Custom and Premium */
-    .client-item {
-        display: flex;
-        align-items: center;
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid #f1f5f9;
-        transition: all 0.2s ease;
-    }
-
-    .client-item:last-child {
-        border-bottom: none;
-    }
-
-    .client-item:hover {
-        background: #f8fafc;
-    }
-
-    .client-avatar {
-        width: 48px;
-        height: 48px;
-        background: #475569;
-        /* Dark grey like the screenshot */
-        color: #ffffff;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 0.875rem;
-        margin-right: 1.25rem;
-        flex-shrink: 0;
-        border: 2px solid #e2e8f0;
-    }
-
-    .client-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .client-name {
-        font-weight: 700;
-        color: #1e293b;
-        font-size: 1rem;
-        margin-bottom: 0.25rem;
-    }
-
-    .client-details {
-        color: #64748b;
-        font-size: 0.875rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .client-country {
-        font-size: 1.5rem;
-        margin-left: 1rem;
-    }
 
     /* 6-Card Grid */
     .stats-grid-6 {
