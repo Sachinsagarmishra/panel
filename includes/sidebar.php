@@ -44,10 +44,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <span class="nav-item-icon"><i class="fa-regular fa-copy"></i></span>
             <span>Projects</span>
         </a>
-        <a href="tasks.php" class="nav-item <?php echo $current_page == 'tasks.php' ? 'active' : ''; ?>">
-            <span class="nav-item-icon"><i class="fa-regular fa-pen-to-square"></i></span>
-            <span>Tasks</span>
-        </a>
     </div>
 
     <div class="nav-section">

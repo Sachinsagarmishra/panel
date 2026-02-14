@@ -33,11 +33,14 @@ try {
     // Calculate statistics
     $totalProjects = count($projects);
     $activeProjects = count(array_filter($projects, function ($p) {
-        return $p['status'] == 'In Progress'; }));
+        return $p['status'] == 'In Progress';
+    }));
     $completedProjects = count(array_filter($projects, function ($p) {
-        return $p['status'] == 'Done'; }));
+        return $p['status'] == 'Done';
+    }));
     $ideaProjects = count(array_filter($projects, function ($p) {
-        return $p['status'] == 'Idea'; }));
+        return $p['status'] == 'Idea';
+    }));
 
 } catch (PDOException $e) {
     $error = "Error: " . $e->getMessage();
@@ -239,7 +242,7 @@ try {
                                                     foreach ($services as $service):
                                                         ?>
                                                         <span class="service-tag"><?php echo htmlspecialchars($service); ?></span>
-                                                    <?php
+                                                        <?php
                                                     endforeach;
                                                 else:
                                                     ?>
@@ -585,7 +588,6 @@ try {
                             <p>⚠️ <strong>Warning:</strong> This action will permanently delete:</p>
                             <ul style="margin: 1rem 0; padding-left: 1.5rem; color: #dc2626;">
                                 <li>Project details and information</li>
-                                <li>All associated tasks</li>
                                 <li>Project timeline and deliverables</li>
                                 <li>Any linked files or notes</li>
                             </ul>

@@ -65,18 +65,6 @@ try {
     ");
     $upcomingDeadlines = $upcomingStmt->fetchAll();
 
-    // Recent tasks (last 10)
-    $recentTasksStmt = $pdo->query("
-        SELECT t.task_name, t.status, t.priority, t.due_date, t.created_at,
-               p.title as project_title, c.name as client_name
-        FROM tasks t
-        LEFT JOIN projects p ON t.project_id = p.id
-        LEFT JOIN clients c ON p.client_id = c.id
-        ORDER BY t.created_at DESC
-        LIMIT 8
-    ");
-    $recentTasks = $recentTasksStmt->fetchAll();
-
     // Recent clients (last 10)
     $recentClientsStmt = $pdo->query("
         SELECT name, brand_name, email, country, created_at
@@ -244,9 +232,6 @@ function formatCurrencyDisplay($revenues, $limit = 2)
                 <a href="add-project.php" class="btn btn-primary">
                     <span>New Project</span>
                 </a>
-                <a href="tasks.php" class="btn btn-secondary">
-                    <span>Add Task</span>
-                </a>
                 <a href="invoices.php" class="btn btn-secondary">
                     <span>Create Invoice</span>
                 </a>
@@ -289,50 +274,6 @@ function formatCurrencyDisplay($revenues, $limit = 2)
                     </div>
                 </div>
 
-                <!-- Recent Tasks -->
-                <div class="dashboard-card">
-                    <div class="dashboard-card-header">
-                        <h3>Recent Tasks</h3>
-                        <span class="card-subtitle">Latest updates</span>
-                    </div>
-                    <div class="dashboard-card-content">
-                        <?php if (empty($recentTasks)): ?>
-                            <div class="empty-state">
-                                <div class="empty-icon">📝</div>
-                                <div class="empty-text">No tasks yet!</div>
-                                <div class="empty-subtext">Create your first task</div>
-                            </div>
-                        <?php else: ?>
-                            <?php foreach ($recentTasks as $task): ?>
-                                <div class="task-item">
-                                    <div class="task-info">
-                                        <div class="task-title">
-                                            <?php echo htmlspecialchars($task['task_name']); ?>
-                                        </div>
-                                        <?php if ($task['project_title']): ?>
-                                            <div class="task-project"><?php echo htmlspecialchars($task['project_title']); ?></div>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="task-status">
-                                        <?php
-                                        switch ($task['priority']) {
-                                            case 'High':
-                                                echo 'P1';
-                                                break;
-                                            case 'Medium':
-                                                echo 'P2';
-                                                break;
-                                            case 'Low':
-                                                echo 'P3';
-                                                break;
-                                        }
-                                        ?>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
-                </div>
 
                 <!-- Recent Clients -->
                 <div class="dashboard-card">
@@ -437,7 +378,7 @@ function formatCurrencyDisplay($revenues, $limit = 2)
         /* Dashboard Grid for 3 columns */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
             margin-top: 2rem;
         }

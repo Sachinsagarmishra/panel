@@ -464,7 +464,7 @@ try {
                             <ul style="margin: 1rem 0; padding-left: 1.5rem; color: #dc2626;">
                                 <li>Client profile and contact information</li>
                                 <li>All associated projects</li>
-                                <li>Project tasks and deliverables</li>
+                                <li>Project details and deliverables</li>
                                 <li>Communication history</li>
                                 <li>All related invoices and proposals</li>
                             </ul>
