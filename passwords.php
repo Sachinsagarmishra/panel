@@ -48,11 +48,10 @@ include 'includes/header.php';
 ?>
 <header class="header fade-in">
     <div>
-        <h1>🔐 Password Manager</h1>
+        <h1>Password Manager</h1>
         <p>Securely store and manage your passwords</p>
     </div>
     <button onclick="togglePasswordForm()" class="btn btn-primary">
-        <span>➕</span>
         <span>Add Password</span>
     </button>
 </header>
@@ -67,10 +66,6 @@ include 'includes/header.php';
             </div>
             <div class="stat-icon">🔐</div>
         </div>
-        <div class="stat-change neutral">
-            <span>🔒</span>
-            <span>Stored securely</span>
-        </div>
     </div>
 
     <div class="stat-card">
@@ -80,10 +75,6 @@ include 'includes/header.php';
                 <div class="stat-value"><?php echo $thisMonthPasswords; ?></div>
             </div>
             <div class="stat-icon">📅</div>
-        </div>
-        <div class="stat-change positive">
-            <span>🆕</span>
-            <span>New entries</span>
         </div>
     </div>
 
@@ -95,10 +86,6 @@ include 'includes/header.php';
             </div>
             <div class="stat-icon">🛡️</div>
         </div>
-        <div class="stat-change positive">
-            <span>🔒</span>
-            <span>Encrypted</span>
-        </div>
     </div>
 
     <div class="stat-card">
@@ -108,10 +95,6 @@ include 'includes/header.php';
                 <div class="stat-value" style="font-size: 1.5rem;">Ready</div>
             </div>
             <div class="stat-icon">⚡</div>
-        </div>
-        <div class="stat-change positive">
-            <span>🚀</span>
-            <span>Available</span>
         </div>
     </div>
 </div>
@@ -196,7 +179,6 @@ include 'includes/header.php';
 <div class="table-container fade-in">
     <div class="table-header">
         <div class="table-title">
-            <span>🔐</span>
             <span>Stored Passwords (<?php echo count($passwords); ?>)</span>
         </div>
         <div class="search-container">
@@ -255,7 +237,7 @@ include 'includes/header.php';
                             <button
                                 onclick="copyToClipboard('<?php echo htmlspecialchars($pass['username_email']); ?>', 'username')"
                                 class="copy-btn" title="Copy Username">
-                                📋 Copy
+                                Copy
                             </button>
                         </td>
                         <td>
@@ -269,12 +251,12 @@ include 'includes/header.php';
                                 </span>
                                 <div style="margin-top: 0.5rem;">
                                     <button onclick="togglePassword(<?php echo $pass['id']; ?>)" class="copy-btn">
-                                        👁️ Show
+                                        Show
                                     </button>
                                     <button
                                         onclick="copyToClipboard('<?php echo htmlspecialchars($pass['password']); ?>', 'password')"
                                         class="copy-btn" title="Copy Password">
-                                        📋 Copy
+                                        Copy
                                     </button>
                                 </div>
                             </div>
@@ -293,12 +275,12 @@ include 'includes/header.php';
                             <div style="display: flex; gap: 0.5rem;">
                                 <button onclick="editPassword(<?php echo $pass['id']; ?>)" class="action-btn btn-secondary"
                                     title="Edit Password">
-                                    ✏️
+                                    <i class="fa-regular fa-pen-to-square"></i>
                                 </button>
                                 <button
                                     onclick="deletePassword(<?php echo $pass['id']; ?>, '<?php echo htmlspecialchars($domain ?: $pass['website_link']); ?>')"
                                     class="action-btn btn-danger" title="Delete Password">
-                                    🗑️
+                                    <i class="fa-regular fa-trash-can"></i>
                                 </button>
                             </div>
                         </td>
