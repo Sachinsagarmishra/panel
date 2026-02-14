@@ -8,6 +8,7 @@ $statusFilter = $_GET['status'] ?? '';
 
 // Handle form submission
 if ($_POST) {
+    $invoice_id = $_POST['invoice_id'] ?? null;
     $invoice_number = trim($_POST['invoice_number']);
     $client_id = $_POST['client_id'];
     $project_id = $_POST['project_id'] ?? null;
@@ -25,14 +26,43 @@ if ($_POST) {
         // Start transaction
         $pdo->beginTransaction();
 
-        // Insert invoice
-        $stmt = $pdo->prepare("
-            INSERT INTO invoices (invoice_number, client_id, project_id, issue_date, due_date, amount, currency, payment_mode, bank_account, paypal_account, upi_account, notes) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-        $stmt->execute([$invoice_number, $client_id, $project_id, $issue_date, $due_date, $total_amount, $currency, $payment_mode, $bank_account, $paypal_account, $upi_account, $notes]);
+        if ($invoice_id) {
+            // Update existing invoice
+            $stmt = $pdo->prepare("
+                UPDATE invoices 
+                SET invoice_number = ?, client_id = ?, project_id = ?, issue_date = ?, due_date = ?, 
+                    amount = ?, currency = ?, payment_mode = ?, bank_account = ?, 
+                    paypal_account = ?, upi_account = ?, notes = ?
+                WHERE id = ?
+            ");
+            $stmt->execute([
+                $invoice_number,
+                $client_id,
+                $project_id,
+                $issue_date,
+                $due_date,
+                $total_amount,
+                $currency,
+                $payment_mode,
+                $bank_account,
+                $paypal_account,
+                $upi_account,
+                $notes,
+                $invoice_id
+            ]);
 
-        $invoiceId = $pdo->lastInsertId();
+            // Clear old items
+            $pdo->prepare("DELETE FROM invoice_items WHERE invoice_id = ?")->execute([$invoice_id]);
+            $currentInvoiceId = $invoice_id;
+        } else {
+            // Insert new invoice
+            $stmt = $pdo->prepare("
+                INSERT INTO invoices (invoice_number, client_id, project_id, issue_date, due_date, amount, currency, payment_mode, bank_account, paypal_account, upi_account, notes) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([$invoice_number, $client_id, $project_id, $issue_date, $due_date, $total_amount, $currency, $payment_mode, $bank_account, $paypal_account, $upi_account, $notes]);
+            $currentInvoiceId = $pdo->lastInsertId();
+        }
 
         // Insert invoice items
         if (isset($_POST['items']) && is_array($_POST['items'])) {
@@ -42,21 +72,21 @@ if ($_POST) {
             ");
 
             foreach ($_POST['items'] as $item) {
-                if (!empty($item['description']) && !empty($item['rate'])) {
+                if (!empty($item['description']) && (isset($item['rate']) && $item['rate'] !== '')) {
                     $quantity = floatval($item['quantity']) ?: 1;
                     $rate = floatval($item['rate']);
                     $amount = $quantity * $rate;
 
-                    $itemStmt->execute([$invoiceId, $item['description'], $quantity, $rate, $amount]);
+                    $itemStmt->execute([$currentInvoiceId, $item['description'], $quantity, $rate, $amount]);
                 }
             }
         }
 
         $pdo->commit();
-        $success = "Invoice created successfully!";
+        $msg = $invoice_id ? "Invoice updated successfully!" : "Invoice created successfully!";
 
         // Redirect to avoid form resubmission
-        header("Location: invoices.php?success=" . urlencode($success));
+        header("Location: invoices.php?success=" . urlencode($msg));
         exit;
 
     } catch (PDOException $e) {
@@ -237,11 +267,12 @@ include 'includes/header.php';
 <div id="invoiceForm" class="form-modal" style="display: none;">
     <div class="form-content">
         <div class="form-header">
-            <h2>Create New Invoice</h2>
+            <h2 id="formTitle">Create New Invoice</h2>
             <button type="button" onclick="toggleInvoiceForm()" class="close-btn">✕</button>
         </div>
 
         <form method="POST" id="invoiceFormElement">
+            <input type="hidden" name="invoice_id" id="form_invoice_id">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
                 <div>
                     <div class="form-group">
@@ -417,7 +448,7 @@ include 'includes/header.php';
 
             <div class="form-actions">
                 <button type="button" onclick="toggleInvoiceForm()" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-primary">Create Invoice</button>
+                <button type="submit" id="submitBtn" class="btn btn-primary">Create Invoice</button>
             </div>
         </form>
     </div>
@@ -551,6 +582,10 @@ include 'includes/header.php';
                                     <button onclick="viewInvoiceDetails(<?php echo $invoice['id']; ?>)"
                                         class="action-btn btn-secondary" title="View Details">
                                         <i class="fa-regular fa-eye"></i>
+                                    </button>
+                                    <button onclick="editInvoice(<?php echo $invoice['id']; ?>)" class="action-btn btn-primary"
+                                        title="Edit Invoice" style="background: #4f46e5;">
+                                        <i class="fa-regular fa-pen-to-square"></i>
                                     </button>
                                 </div>
 
@@ -914,6 +949,12 @@ include 'includes/header.php';
         } else {
             form.style.display = 'flex';
             document.body.style.overflow = 'hidden';
+
+            // Default for NEW invoice
+            document.getElementById('formTitle').textContent = 'Create New Invoice';
+            document.getElementById('submitBtn').textContent = 'Create Invoice';
+            document.getElementById('form_invoice_id').value = '';
+
             generateNewInvoiceNumber();
             updateCurrencySymbol();
             calculateTotal();
@@ -1082,6 +1123,70 @@ include 'includes/header.php';
 
     function viewInvoiceDetails(invoiceId) {
         window.open(`export-invoice.php?id=${invoiceId}&type=view`, '_blank');
+    }
+
+    async function editInvoice(invoiceId) {
+        try {
+            const response = await fetch(`get-invoice-details.php?id=${invoiceId}`);
+            const data = await response.json();
+
+            if (!data.success) {
+                alert('Error: ' + data.message);
+                return;
+            }
+
+            const inv = data.invoice;
+            const items = data.items;
+
+            // Open form
+            toggleInvoiceForm();
+
+            // Update mode
+            document.getElementById('formTitle').textContent = 'Edit Invoice';
+            document.getElementById('submitBtn').textContent = 'Update Invoice';
+            document.getElementById('form_invoice_id').value = inv.id;
+
+            // Fill basic info
+            document.getElementById('invoice_number').value = inv.invoice_number;
+            document.getElementById('client_id').value = inv.client_id;
+
+            // Load projects then set value
+            loadClientProjects();
+            document.getElementById('project_id').value = inv.project_id || '';
+
+            document.getElementById('currency').value = inv.currency;
+            document.getElementById('issue_date').value = inv.issue_date;
+            document.getElementById('due_date').value = inv.due_date;
+            document.getElementById('payment_mode').value = inv.payment_mode || '';
+
+            togglePaymentFields();
+            if (inv.bank_account) document.getElementById('bank_account').value = inv.bank_account;
+            if (inv.paypal_account) document.getElementById('paypal_account').value = inv.paypal_account;
+            if (inv.upi_account) document.getElementById('upi_account').value = inv.upi_account;
+
+            document.getElementById('notes').value = inv.notes || '';
+
+            // Fill items
+            const itemsContainer = document.getElementById('invoiceItems');
+            itemsContainer.innerHTML = '';
+            itemIndex = -1;
+
+            items.forEach((item, idx) => {
+                addInvoiceItem();
+                const row = document.querySelector(`[data-index="${itemIndex}"]`);
+                row.querySelector(`textarea[name="items[${itemIndex}][description]"]`).value = item.description;
+                row.querySelector(`input[name="items[${itemIndex}][quantity]"]`).value = item.quantity;
+                row.querySelector(`input[name="items[${itemIndex}][rate]"]`).value = item.rate;
+                row.querySelector(`input[name="items[${itemIndex}][amount]"]`).value = item.amount;
+            });
+
+            updateCurrencySymbol();
+            calculateTotal();
+
+        } catch (error) {
+            console.error('Error fetching invoice details:', error);
+            alert('Failed to load invoice details');
+        }
     }
 
     function markAsPaid(invoiceId) {
