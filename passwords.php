@@ -8,7 +8,7 @@ if ($_POST) {
     $website_link = trim($_POST['website_link']);
     $username_email = trim($_POST['username_email']);
     $password = trim($_POST['password']);
-    
+
     try {
         $stmt = $pdo->prepare("
             INSERT INTO passwords (website_link, username_email, password) 
@@ -16,12 +16,12 @@ if ($_POST) {
         ");
         $stmt->execute([$website_link, $username_email, $password]);
         $success = "Password saved successfully!";
-        
+
         // Redirect to avoid form resubmission
         header("Location: passwords.php?success=" . urlencode($success));
         exit;
-        
-    } catch(PDOException $e) {
+
+    } catch (PDOException $e) {
         $error = "Error: " . $e->getMessage();
     }
 }
@@ -30,20 +30,21 @@ if ($_POST) {
 try {
     $passwordsStmt = $pdo->query("SELECT * FROM passwords ORDER BY created_at DESC");
     $passwords = $passwordsStmt->fetchAll();
-    
+
     // Calculate statistics
     $totalPasswords = count($passwords);
-    $thisMonthPasswords = count(array_filter($passwords, function($pass) {
+    $thisMonthPasswords = count(array_filter($passwords, function ($pass) {
         return strpos($pass['created_at'], date('Y-m')) === 0;
     }));
-    
-} catch(PDOException $e) {
+
+} catch (PDOException $e) {
     $error = "Error: " . $e->getMessage();
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -52,79 +53,10 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="container">
-        <!-- Sidebar -->
-        <nav class="sidebar">
-            <div class="logo">
-                <div class="logo-icon">F</div>
-                <div class="logo-text">FreelancePro</div>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Overview</div>
-                <a href="index.php" class="nav-item">
-                    <span class="nav-item-icon">📊</span>
-                    <span>Dashboard</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Client Management</div>
-                <a href="clients.php" class="nav-item">
-                    <span class="nav-item-icon">👥</span>
-                    <span>Clients</span>
-                </a>
-                <a href="projects.php" class="nav-item">
-                    <span class="nav-item-icon">📁</span>
-                    <span>Projects</span>
-                </a>
-                <a href="tasks.php" class="nav-item">
-                    <span class="nav-item-icon">✅</span>
-                    <span>Tasks</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Business</div>
-                <a href="proposals.php" class="nav-item">
-                    <span class="nav-item-icon">📄</span>
-                    <span>Proposals</span>
-                </a>
-                <a href="invoices.php" class="nav-item">
-                    <span class="nav-item-icon">💰</span>
-                    <span>Invoices</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Security</div>
-                <a href="passwords.php" class="nav-item active">
-                    <span class="nav-item-icon">🔐</span>
-                    <span>Password Manager</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Settings</div>
-                <a href="bank-accounts.php" class="nav-item">
-                    <span class="nav-item-icon">🏦</span>
-                    <span>Bank Accounts</span>
-                </a>
-                <a href="currencies.php" class="nav-item">
-                    <span class="nav-item-icon">💱</span>
-                    <span>Currencies</span>
-                </a>
-            </div>
-            
-            <!-- Logout Section -->
-            <div class="nav-section" style="margin-top: auto; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
-                <a href="logout.php" class="nav-item logout-item" onclick="return confirm('Are you sure you want to logout?')">
-                    <span class="nav-item-icon">🚪</span>
-                    <span>Logout</span>
-                </a>
-            </div>
-        </nav>
+        <?php include 'includes/sidebar.php'; ?>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -230,13 +162,13 @@ try {
                         <h2>🔐 Add New Password</h2>
                         <button type="button" onclick="togglePasswordForm()" class="close-btn">✕</button>
                     </div>
-                    
+
                     <form method="POST" id="passwordFormElement">
                         <div class="form-grid" style="grid-template-columns: 1fr; gap: 1.5rem;">
                             <div class="form-group">
                                 <label class="form-label" for="website_link">Website Link *</label>
-                                <input type="url" id="website_link" name="website_link" class="form-input" 
-                                       placeholder="https://example.com" required>
+                                <input type="url" id="website_link" name="website_link" class="form-input"
+                                    placeholder="https://example.com" required>
                                 <small style="color: #64748b; font-size: 0.75rem;">
                                     💡 Include https:// for proper validation
                                 </small>
@@ -244,21 +176,22 @@ try {
 
                             <div class="form-group">
                                 <label class="form-label" for="username_email">Username / Email *</label>
-                                <input type="text" id="username_email" name="username_email" class="form-input" 
-                                       placeholder="username or email@example.com" required>
+                                <input type="text" id="username_email" name="username_email" class="form-input"
+                                    placeholder="username or email@example.com" required>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label" for="password">Password *</label>
                                 <div style="position: relative;">
-                                    <input type="password" id="password" name="password" class="form-input" 
-                                           placeholder="Enter your password" required>
+                                    <input type="password" id="password" name="password" class="form-input"
+                                        placeholder="Enter your password" required>
                                     <button type="button" class="password-toggle" onclick="togglePasswordVisibility()">
                                         <i class="fas fa-eye" id="toggleIcon"></i>
                                     </button>
                                 </div>
                                 <div style="margin-top: 0.5rem;">
-                                    <button type="button" onclick="generatePassword()" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                    <button type="button" onclick="generatePassword()" class="btn btn-secondary"
+                                        style="padding: 0.5rem 1rem; font-size: 0.875rem;">
                                         🎲 Generate Strong Password
                                     </button>
                                 </div>
@@ -266,7 +199,8 @@ try {
                         </div>
 
                         <div class="form-actions">
-                            <button type="button" onclick="togglePasswordForm()" class="btn btn-secondary">Cancel</button>
+                            <button type="button" onclick="togglePasswordForm()"
+                                class="btn btn-secondary">Cancel</button>
                             <button type="submit" class="btn btn-primary">🔐 Save Password</button>
                         </div>
                     </form>
@@ -315,11 +249,11 @@ try {
                                             </div>
                                             <div>
                                                 <div style="font-weight: 600; color: #1e293b;">
-                                                    <a href="<?php echo htmlspecialchars($pass['website_link']); ?>" 
-                                                       target="_blank" style="color: inherit; text-decoration: none;">
-                                                        <?php 
+                                                    <a href="<?php echo htmlspecialchars($pass['website_link']); ?>"
+                                                        target="_blank" style="color: inherit; text-decoration: none;">
+                                                        <?php
                                                         $domain = parse_url($pass['website_link'], PHP_URL_HOST);
-                                                        echo htmlspecialchars($domain ?: $pass['website_link']); 
+                                                        echo htmlspecialchars($domain ?: $pass['website_link']);
                                                         ?>
                                                     </a>
                                                 </div>
@@ -333,8 +267,9 @@ try {
                                         <div style="font-weight: 500; color: #1e293b;">
                                             <?php echo htmlspecialchars($pass['username_email']); ?>
                                         </div>
-                                        <button onclick="copyToClipboard('<?php echo htmlspecialchars($pass['username_email']); ?>', 'username')" 
-                                                class="copy-btn" title="Copy Username">
+                                        <button
+                                            onclick="copyToClipboard('<?php echo htmlspecialchars($pass['username_email']); ?>', 'username')"
+                                            class="copy-btn" title="Copy Username">
                                             📋 Copy
                                         </button>
                                     </td>
@@ -343,15 +278,17 @@ try {
                                             <span class="password-hidden" id="password-<?php echo $pass['id']; ?>">
                                                 ••••••••••
                                             </span>
-                                            <span class="password-visible" id="password-full-<?php echo $pass['id']; ?>" style="display: none;">
+                                            <span class="password-visible" id="password-full-<?php echo $pass['id']; ?>"
+                                                style="display: none;">
                                                 <?php echo htmlspecialchars($pass['password']); ?>
                                             </span>
                                             <div style="margin-top: 0.5rem;">
                                                 <button onclick="togglePassword(<?php echo $pass['id']; ?>)" class="copy-btn">
                                                     👁️ Show
                                                 </button>
-                                                <button onclick="copyToClipboard('<?php echo htmlspecialchars($pass['password']); ?>', 'password')" 
-                                                        class="copy-btn" title="Copy Password">
+                                                <button
+                                                    onclick="copyToClipboard('<?php echo htmlspecialchars($pass['password']); ?>', 'password')"
+                                                    class="copy-btn" title="Copy Password">
                                                     📋 Copy
                                                 </button>
                                             </div>
@@ -369,12 +306,13 @@ try {
                                     </td>
                                     <td>
                                         <div style="display: flex; gap: 0.5rem;">
-                                            <button onclick="editPassword(<?php echo $pass['id']; ?>)" 
-                                                    class="action-btn btn-secondary" title="Edit Password">
+                                            <button onclick="editPassword(<?php echo $pass['id']; ?>)"
+                                                class="action-btn btn-secondary" title="Edit Password">
                                                 ✏️
                                             </button>
-                                            <button onclick="deletePassword(<?php echo $pass['id']; ?>, '<?php echo htmlspecialchars($domain ?: $pass['website_link']); ?>')" 
-                                                    class="action-btn btn-danger" title="Delete Password">
+                                            <button
+                                                onclick="deletePassword(<?php echo $pass['id']; ?>, '<?php echo htmlspecialchars($domain ?: $pass['website_link']); ?>')"
+                                                class="action-btn btn-danger" title="Delete Password">
                                                 🗑️
                                             </button>
                                         </div>
@@ -604,7 +542,7 @@ try {
         function togglePasswordForm() {
             const form = document.getElementById('passwordForm');
             const isVisible = form.style.display !== 'none';
-            
+
             if (isVisible) {
                 form.style.display = 'none';
                 document.body.style.overflow = 'auto';
@@ -626,7 +564,7 @@ try {
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('password');
             const toggleIcon = document.getElementById('toggleIcon');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 toggleIcon.className = 'fas fa-eye-slash';
@@ -649,7 +587,7 @@ try {
             const hiddenSpan = document.getElementById('password-' + id);
             const visibleSpan = document.getElementById('password-full-' + id);
             const button = event.target;
-            
+
             if (hiddenSpan.style.display === 'none') {
                 hiddenSpan.style.display = 'inline';
                 visibleSpan.style.display = 'none';
@@ -662,14 +600,14 @@ try {
         }
 
         function copyToClipboard(text, type) {
-            navigator.clipboard.writeText(text).then(function() {
+            navigator.clipboard.writeText(text).then(function () {
                 // Show temporary success message
                 const btn = event.target;
                 const originalText = btn.innerHTML;
                 btn.innerHTML = '✅ Copied!';
                 btn.style.background = '#10b981';
                 btn.style.color = 'white';
-                
+
                 setTimeout(() => {
                     btn.innerHTML = originalText;
                     btn.style.background = '#e2e8f0';
@@ -737,11 +675,11 @@ try {
         }
 
         // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function() {
+        document.getElementById('searchInput').addEventListener('input', function () {
             const searchTerm = this.value.toLowerCase();
             const table = document.getElementById('passwordsTable');
             const rows = table.querySelectorAll('tbody tr');
-            
+
             rows.forEach(row => {
                 const text = row.textContent.toLowerCase();
                 if (text.includes(searchTerm)) {
@@ -753,7 +691,7 @@ try {
         });
 
         // Auto-hide alert messages
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
                 setTimeout(() => {
@@ -764,14 +702,14 @@ try {
             });
 
             // Close modal when clicking outside
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 if (e.target.classList.contains('form-modal')) {
                     togglePasswordForm();
                 }
             });
 
             // Close modal with Escape key
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape') {
                     togglePasswordForm();
                     closeDeleteModal();
@@ -780,4 +718,5 @@ try {
         });
     </script>
 </body>
+
 </html>

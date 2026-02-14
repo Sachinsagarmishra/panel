@@ -103,72 +103,7 @@ sort($countries);
 </head>
 <body>
     <div class="container">
-        <!-- Sidebar -->
-        <nav class="sidebar">
-           <div class="logo">
-    <div class="logo-icon">
-        <img src="https://sachindesign.com/assets/img/Sachin's%20photo.png" alt="Logo Icon" />
-    </div>
-    <div class="logo-text">Sachindesign</div>
-</div>
-
-            
-            <div class="nav-section">
-                <div class="nav-title">Overview</div>
-                <a href="index.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fas fa-chart-bar"></i></span>
-                    <span>Dashboard</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Client Management</div>
-                <a href="clients.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-circle-user"></i></span>
-                    <span>Clients</span>
-                </a>
-                <a href="projects.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-copy"></i></span>
-                    <span>Projects</span>
-                </a>
-                <a href="tasks.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-pen-to-square"></i></span>
-                    <span>Tasks</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Business</div>
-                <a href="invoices.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-chess-king"></i></span>
-                    <span>Invoices</span>
-                </a>
-                <a href="paymentlink.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-solid fa-link"></i></span>
-                    <span>Payment Link</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Settings</div>
-                <a href="bank-accounts.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-gem"></i></span>
-                    <span>Bank Accounts</span>
-                </a>
-                <a href="currencies.php" class="nav-item">
-                    <span class="nav-item-icon">💱</span>
-                    <span>Currencies</span>
-                </a>
-            </div>
-            
-                <div class="nav-section" style="margin-top: auto; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
-        <a href="logout.php" class="nav-item logout-item" onclick="return confirm('Are you sure you want to logout?')">
-                    <span class="nav-item-icon"><i class="fa-regular fa-share-from-square"></i></span>
-            <span>Logout</span>
-        </a>
-    </div>
-    
-        </nav>
+        <?php include 'includes/sidebar.php'; ?>
 
         <!-- Main Content -->
         <main class="main-content">

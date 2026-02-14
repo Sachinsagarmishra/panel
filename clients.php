@@ -22,99 +22,38 @@ try {
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $clients = $stmt->fetchAll();
-    
+
     // Calculate statistics
     $totalClients = count($clients);
     $countries = array_unique(array_column($clients, 'country'));
     $countriesCount = count(array_filter($countries));
-    
+
     // Get most common country
     $countryStats = array_count_values(array_filter(array_column($clients, 'country')));
     $topCountry = $countryStats ? array_keys($countryStats)[0] : 'N/A';
-    
-} catch(PDOException $e) {
+
+} catch (PDOException $e) {
     $error = "Error: " . $e->getMessage();
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Clients</title>
     <link href="assets/style.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
 
 </head>
+
 <body>
     <div class="container">
-        <!-- Sidebar -->
-        <nav class="sidebar">
-           <div class="logo">
-    <div class="logo-icon">
-        <img src="https://sachindesign.com/assets/img/Sachin's%20photo.png" alt="Logo Icon" />
-    </div>
-    <div class="logo-text">Sachindesign</div>
-</div>
-
-            <div class="nav-section">
-                <div class="nav-title">Overview</div>
-                <a href="index.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fas fa-chart-bar"></i></span>
-                    <span>Dashboard</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Client Management</div>
-                <a href="clients.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-circle-user"></i></span>
-                    <span>Clients</span>
-                </a>
-                <a href="projects.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-copy"></i></span>
-                    <span>Projects</span>
-                </a>
-                <a href="tasks.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-pen-to-square"></i></span>
-                    <span>Tasks</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Business</div>
-                <a href="invoices.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-chess-king"></i></span>
-                    <span>Invoices</span>
-                </a>
-                <a href="paymentlink.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-solid fa-link"></i></span>
-                    <span>Payment Link</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Settings</div>
-                <a href="bank-accounts.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-gem"></i></span>
-                    <span>Bank Accounts</span>
-                </a>
-                <a href="currencies.php" class="nav-item">
-                    <span class="nav-item-icon">💱</span>
-                    <span>Currencies</span>
-                </a>
-            </div>
-            
-                <div class="nav-section" style="margin-top: auto; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
-        <a href="logout.php" class="nav-item logout-item" onclick="return confirm('Are you sure you want to logout?')">
-                    <span class="nav-item-icon"><i class="fa-regular fa-share-from-square"></i></span>
-            <span>Logout</span>
-        </a>
-    </div>
-    
-        </nav>
+        <?php include 'includes/sidebar.php'; ?>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -127,7 +66,7 @@ try {
                     <span>Add Client</span>
                 </a>
             </header>
-            
+
             <!-- Success/Error Messages -->
             <?php if (isset($_GET['success'])): ?>
                 <div class="alert alert-success">
@@ -145,17 +84,16 @@ try {
             <div class="filters fade-in">
                 <div class="filter-group">
                     <form method="GET" style="display: flex; gap: 1rem; align-items: center;">
-                        <input type="text" name="search" class="form-input" 
-                               placeholder="Search clients, brands, countries..." 
-                               value="<?php echo htmlspecialchars($search); ?>"
-                               style="width: 300px;">
+                        <input type="text" name="search" class="form-input"
+                            placeholder="Search clients, brands, countries..."
+                            value="<?php echo htmlspecialchars($search); ?>" style="width: 300px;">
                         <button type="submit" class="btn btn-secondary">Search</button>
                         <?php if ($search): ?>
                             <a href="clients.php" class="btn btn-secondary">Clear</a>
                         <?php endif; ?>
                     </form>
                 </div>
-                
+
                 <div class="filter-group">
                     <a href="add-client.php" class="btn btn-primary">
                         <span>Add New Client</span>
@@ -189,7 +127,8 @@ try {
                                     <div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>
                                     <div style="font-weight: 600; margin-bottom: 0.5rem;">No clients yet</div>
                                     <div>Add your first client to get started!</div>
-                                    <a href="add-client.php" class="btn btn-primary" style="margin-top: 1rem;">Add Client</a>
+                                    <a href="add-client.php" class="btn btn-primary" style="margin-top: 1rem;">Add
+                                        Client</a>
                                 </td>
                             </tr>
                         <?php else: ?>
@@ -215,8 +154,8 @@ try {
                                             <div style="margin-bottom: 0.5rem;">
                                                 <strong style="font-size: 12px;">Email:</strong>
                                                 <div style="color: #000;font-size: 14px; text-decoration: underline;">
-                                                    <a href="mailto:<?php echo htmlspecialchars($client['email']); ?>" 
-                                                       style="color: inherit; text-decoration: none;">
+                                                    <a href="mailto:<?php echo htmlspecialchars($client['email']); ?>"
+                                                        style="color: inherit; text-decoration: none;">
                                                         <?php echo htmlspecialchars($client['email']); ?>
                                                     </a>
                                                 </div>
@@ -225,8 +164,8 @@ try {
                                                 <div>
                                                     <strong style="font-size: 12px;">Phone:</strong>
                                                     <div style="color: #868b89;font-size: 14px;">
-                                                        <a href="tel:<?php echo htmlspecialchars($client['phone']); ?>" 
-                                                           style="color: inherit; text-decoration: none;">
+                                                        <a href="tel:<?php echo htmlspecialchars($client['phone']); ?>"
+                                                            style="color: inherit; text-decoration: none;">
                                                             <?php echo htmlspecialchars($client['phone']); ?>
                                                         </a>
                                                     </div>
@@ -237,7 +176,7 @@ try {
                                     <td>
                                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                                             <span style="font-size: 1.2rem;">
-                                                <?php 
+                                                <?php
                                                 // Country flag emojis
                                                 $countryFlags = [
                                                     'India' => '🇮🇳',
@@ -268,7 +207,7 @@ try {
                                         <?php if ($client['brand_name']): ?>
                                             <div>
                                                 <div style="font-weight: 600; color: #1e293b; margin-bottom: 0.25rem;">
-                                                     <?php echo htmlspecialchars($client['brand_name']); ?>
+                                                    <?php echo htmlspecialchars($client['brand_name']); ?>
                                                 </div>
                                                 <div style="color: #64748b; font-size: 0.875rem;">
                                                     Company/Brand
@@ -294,13 +233,14 @@ try {
                                             <!--        class="action-btn btn-secondary" title="View Details">-->
                                             <!--  <i class="fa-regular fa-eye"></i>-->
                                             <!--</button>-->
-                                            <button onclick="editClient(<?php echo $client['id']; ?>)" 
-                                                    class="action-btn btn-secondary" title="Edit Client">
-                                              <i class="fa-regular fa-pen-to-square"></i>
+                                            <button onclick="editClient(<?php echo $client['id']; ?>)"
+                                                class="action-btn btn-secondary" title="Edit Client">
+                                                <i class="fa-regular fa-pen-to-square"></i>
                                             </button>
-                                            <button onclick="deleteClient(<?php echo $client['id']; ?>, '<?php echo htmlspecialchars($client['name']); ?>')" 
-                                                    class="action-btn btn-danger" title="Delete Client">
-                                              <i class="fa-regular fa-trash-can"></i>
+                                            <button
+                                                onclick="deleteClient(<?php echo $client['id']; ?>, '<?php echo htmlspecialchars($client['name']); ?>')"
+                                                class="action-btn btn-danger" title="Delete Client">
+                                                <i class="fa-regular fa-trash-can"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -314,69 +254,75 @@ try {
     </div>
 
     <style>
-       
-           .sidebar {
-    border-radius: 0px 20px 20px 0px;
-    width: 250px;
-    background: #ffffff;
-    padding: 1.5rem;
-    overflow-y: auto;
-  box-shadow: none;
-}
-    
-    
+        .sidebar {
+            border-radius: 0px 20px 20px 0px;
+            width: 250px;
+            background: #ffffff;
+            padding: 1.5rem;
+            overflow-y: auto;
+            box-shadow: none;
+        }
+
+
         .logo-icon img {
-    width: 40px;   /* ya jo bhi size chahiye */
-    height: auto;
-}
+            width: 40px;
+            /* ya jo bhi size chahiye */
+            height: auto;
+        }
 
-.logo-icon {
-    background: #0000!important;}
-        
+        .logo-icon {
+            background: #0000 !important;
+        }
+
         .main-content {
-    background: #fafafa !important;
-}
-       .nav-item {
-    gap: 10px;
-    color: #000000;
-    margin-bottom: -0.75rem;
-    font-size: 14px;
-} 
+            background: #fafafa !important;
+        }
+
+        .nav-item {
+            gap: 10px;
+            color: #000000;
+            margin-bottom: -0.75rem;
+            font-size: 14px;
+        }
+
         .nav-item:hover {
-    padding: 8px 20px;
-}
+            padding: 8px 20px;
+        }
+
         .nav-item.active {
-    background: #171717 !important;
-    color: #fff !important;
-    font-weight: 600 !important;
-}
+            background: #171717 !important;
+            color: #fff !important;
+            font-weight: 600 !important;
+        }
 
-.nav-title {
-    color: #000000;
-    margin-bottom: 0px;
-}
+        .nav-title {
+            color: #000000;
+            margin-bottom: 0px;
+        }
+
         .header {
-    border: solid 1px #e5e7eb !important;
-    overflow: hidden;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    background: white;
-    box-shadow:none !important;
-    padding: 1.5rem !important;
-    border-radius: 12px !important;
-}
+            border: solid 1px #e5e7eb !important;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: white;
+            box-shadow: none !important;
+            padding: 1.5rem !important;
+            border-radius: 12px !important;
+        }
 
-.header h1 {
-    font-size: 16px;
-    font-weight: 600;
-}
-.header p {
-    font-size: 12px;
-    margin-top: 0px;
-}
-       
+        .header h1 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 12px;
+            margin-top: 0px;
+        }
+
         .alert {
             padding: 1rem;
             border-radius: 8px;
@@ -410,8 +356,8 @@ try {
             font-size: 0.875rem;
             flex-shrink: 0;
         }
-        
-         .btn {
+
+        .btn {
             padding: 8px 20px;
             border: none;
             border-radius: 8px;
@@ -426,7 +372,7 @@ try {
         }
 
         .btn-primary {
-                box-shadow: none !important;
+            box-shadow: none !important;
             background: #171717;
             color: white;
         }
@@ -585,7 +531,7 @@ try {
             // Implement view client details
             alert('View client details for ID: ' + id + '\n\nThis will show client information, projects, and communication history.');
         }
-        
+
         function editClient(id) {
             window.location.href = 'add-client.php?edit=' + id;
         }
@@ -657,11 +603,11 @@ try {
             // Show loading state
             const confirmBtn = document.querySelector('.delete-confirm-btn');
             const cancelBtn = document.querySelector('.delete-cancel-btn');
-            
+
             confirmBtn.innerHTML = '⏳ Deleting...';
             confirmBtn.disabled = true;
             cancelBtn.disabled = true;
-            
+
             // Redirect to delete script
             setTimeout(() => {
                 window.location.href = `delete-client.php?id=${clientId}`;
@@ -669,7 +615,7 @@ try {
         }
 
         // Auto-hide alert messages
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
                 setTimeout(() => {
@@ -680,14 +626,14 @@ try {
             });
 
             // Close modal when clicking outside
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 if (e.target.classList.contains('delete-confirmation')) {
                     closeDeleteModal();
                 }
             });
 
             // Close modal with Escape key
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape') {
                     closeDeleteModal();
                 }
@@ -695,4 +641,5 @@ try {
         });
     </script>
 </body>
+
 </html>

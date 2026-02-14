@@ -10,7 +10,7 @@ if ($_POST) {
     $due_date = $_POST['due_date'] ?? null;
     $project_id = $_POST['project_id'] ?? null;
     $notes = trim($_POST['notes']);
-    
+
     try {
         $stmt = $pdo->prepare("
             INSERT INTO tasks (task_name, priority, due_date, project_id, notes) 
@@ -18,12 +18,12 @@ if ($_POST) {
         ");
         $stmt->execute([$task_name, $priority, $due_date, $project_id, $notes]);
         $success = "Task added successfully!";
-        
+
         // Redirect to avoid form resubmission
         header("Location: tasks.php?success=" . urlencode($success));
         exit;
-        
-    } catch(PDOException $e) {
+
+    } catch (PDOException $e) {
         $error = "Error: " . $e->getMessage();
     }
 }
@@ -32,13 +32,13 @@ if ($_POST) {
 if (isset($_GET['update_status'])) {
     $taskId = $_GET['update_status'];
     $newStatus = $_GET['status'];
-    
+
     try {
         $stmt = $pdo->prepare("UPDATE tasks SET status = ? WHERE id = ?");
         $stmt->execute([$newStatus, $taskId]);
         header("Location: tasks.php");
         exit;
-    } catch(PDOException $e) {
+    } catch (PDOException $e) {
         $error = "Error updating task: " . $e->getMessage();
     }
 }
@@ -60,7 +60,7 @@ try {
             t.created_at DESC
     ");
     $tasks = $tasksStmt->fetchAll();
-    
+
     // Get projects for dropdown
     $projectsStmt = $pdo->query("
         SELECT p.id, p.title, c.name as client_name 
@@ -69,24 +69,27 @@ try {
         ORDER BY p.title
     ");
     $projects = $projectsStmt->fetchAll();
-    
+
     // Calculate statistics
     $totalTasks = count($tasks);
-    $todoTasks = count(array_filter($tasks, function($task) { return $task['status'] == 'Todo'; }));
-    $inProgressTasks = count(array_filter($tasks, function($task) { return $task['status'] == 'In Progress'; }));
-    $completedTasks = count(array_filter($tasks, function($task) { return $task['status'] == 'Completed'; }));
+    $todoTasks = count(array_filter($tasks, function ($task) {
+        return $task['status'] == 'Todo'; }));
+    $inProgressTasks = count(array_filter($tasks, function ($task) {
+        return $task['status'] == 'In Progress'; }));
+    $completedTasks = count(array_filter($tasks, function ($task) {
+        return $task['status'] == 'Completed'; }));
     $overdueTasks = 0;
-    
+
     foreach ($tasks as $task) {
         if ($task['due_date'] && $task['status'] != 'Completed') {
-            $daysLeft = ceil((strtotime($task['due_date']) - time()) / (60*60*24));
+            $daysLeft = ceil((strtotime($task['due_date']) - time()) / (60 * 60 * 24));
             if ($daysLeft < 0) {
                 $overdueTasks++;
             }
         }
     }
-    
-} catch(PDOException $e) {
+
+} catch (PDOException $e) {
     $error = "Error: " . $e->getMessage();
 }
 
@@ -104,6 +107,7 @@ foreach ($tasks as $task) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -112,69 +116,10 @@ foreach ($tasks as $task) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
+
 <body>
     <div class="container">
-       <!-- Sidebar -->
-        <nav class="sidebar">
-           <div class="logo">
-    <div class="logo-icon">
-        <img src="https://sachindesign.com/assets/img/Sachin's%20photo.png" alt="Logo Icon" />
-    </div>
-    <div class="logo-text">Sachindesign</div>
-</div>
-
-            <div class="nav-section">
-                <div class="nav-title">Overview</div>
-                <a href="index.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fas fa-chart-bar"></i></span>
-                    <span>Dashboard</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Client Management</div>
-                <a href="clients.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-circle-user"></i></span>
-                    <span>Clients</span>
-                </a>
-                <a href="projects.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-copy"></i></span>
-                    <span>Projects</span>
-                </a>
-                <a href="tasks.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-pen-to-square"></i></span>
-                    <span>Tasks</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Business</div>
-                <a href="invoices.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-chess-king"></i></span>
-                    <span>Invoices</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Settings</div>
-                <a href="bank-accounts.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-gem"></i></span>
-                    <span>Bank Accounts</span>
-                </a>
-                <a href="currencies.php" class="nav-item">
-                    <span class="nav-item-icon">💱</span>
-                    <span>Currencies</span>
-                </a>
-            </div>
-            
-                <div class="nav-section" style="margin-top: auto; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
-        <a href="logout.php" class="nav-item logout-item" onclick="return confirm('Are you sure you want to logout?')">
-                    <span class="nav-item-icon"><i class="fa-regular fa-share-from-square"></i></span>
-            <span>Logout</span>
-        </a>
-    </div>
-    
-        </nav>
+        <?php include 'includes/sidebar.php'; ?>
 
         <main class="main-content">
             <header class="header fade-in">
@@ -274,14 +219,14 @@ foreach ($tasks as $task) {
                         <h2>Add New Task</h2>
                         <button type="button" onclick="toggleTaskForm()" class="close-btn">✕</button>
                     </div>
-                    
+
                     <form method="POST" id="taskFormElement">
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
                             <div>
                                 <div class="form-group">
                                     <label class="form-label" for="task_name">Task Name *</label>
-                                    <input type="text" id="task_name" name="task_name" class="form-input" 
-                                           placeholder="Enter task description..." required>
+                                    <input type="text" id="task_name" name="task_name" class="form-input"
+                                        placeholder="Enter task description..." required>
                                 </div>
 
                                 <div class="form-group">
@@ -317,8 +262,8 @@ foreach ($tasks as $task) {
 
                         <div class="form-group">
                             <label class="form-label" for="notes">Task Notes</label>
-                            <textarea id="notes" name="notes" class="form-textarea" 
-                                      rows="4" placeholder="Add any additional details or requirements..."></textarea>
+                            <textarea id="notes" name="notes" class="form-textarea" rows="4"
+                                placeholder="Add any additional details or requirements..."></textarea>
                         </div>
 
                         <div class="form-actions">
@@ -335,18 +280,25 @@ foreach ($tasks as $task) {
                     <div class="kanban-column">
                         <div class="kanban-header">
                             <span class="kanban-title">
-                                <?php 
-                                switch($status) {
-                                    case 'Todo': echo '📋 To Do'; break;
-                                    case 'In Progress': echo '🚀 In Progress'; break;
-                                    case 'Completed': echo '✅ Completed'; break;
-                                    default: echo $status;
+                                <?php
+                                switch ($status) {
+                                    case 'Todo':
+                                        echo '📋 To Do';
+                                        break;
+                                    case 'In Progress':
+                                        echo '🚀 In Progress';
+                                        break;
+                                    case 'Completed':
+                                        echo '✅ Completed';
+                                        break;
+                                    default:
+                                        echo $status;
                                 }
                                 ?>
                             </span>
                             <span class="kanban-count"><?php echo count($statusTasks); ?></span>
                         </div>
-                        
+
                         <?php foreach ($statusTasks as $task): ?>
                             <div class="kanban-card task-card" data-task-id="<?php echo $task['id']; ?>">
                                 <div class="card-header">
@@ -354,16 +306,22 @@ foreach ($tasks as $task) {
                                         <?php echo htmlspecialchars($task['task_name']); ?>
                                     </div>
                                     <span class="priority-badge priority-<?php echo strtolower($task['priority']); ?>">
-                                        <?php 
-                                        switch($task['priority']) {
-                                            case 'High': echo '🔴'; break;
-                                            case 'Medium': echo '🟡'; break;
-                                            case 'Low': echo '🟢'; break;
+                                        <?php
+                                        switch ($task['priority']) {
+                                            case 'High':
+                                                echo '🔴';
+                                                break;
+                                            case 'Medium':
+                                                echo '🟡';
+                                                break;
+                                            case 'Low':
+                                                echo '🟢';
+                                                break;
                                         }
                                         ?>
                                     </span>
                                 </div>
-                                
+
                                 <?php if ($task['project_title']): ?>
                                     <div class="card-project">
                                         📁 <?php echo htmlspecialchars($task['project_title']); ?>
@@ -372,12 +330,12 @@ foreach ($tasks as $task) {
                                         <?php endif; ?>
                                     </div>
                                 <?php endif; ?>
-                                
+
                                 <?php if ($task['due_date']): ?>
                                     <div class="card-dates">
                                         📅 <?php echo date('M j, Y', strtotime($task['due_date'])); ?>
-                                        <?php 
-                                        $daysLeft = ceil((strtotime($task['due_date']) - time()) / (60*60*24));
+                                        <?php
+                                        $daysLeft = ceil((strtotime($task['due_date']) - time()) / (60 * 60 * 24));
                                         if ($task['status'] != 'Completed'):
                                             if ($daysLeft < 0): ?>
                                                 <span class="overdue-badge">
@@ -391,55 +349,70 @@ foreach ($tasks as $task) {
                                         endif; ?>
                                     </div>
                                 <?php endif; ?>
-                                
+
                                 <?php if ($task['notes']): ?>
                                     <div class="card-notes">
-                                        💭 <?php echo htmlspecialchars(substr($task['notes'], 0, 60)); ?><?php echo strlen($task['notes']) > 60 ? '...' : ''; ?>
+                                        💭
+                                        <?php echo htmlspecialchars(substr($task['notes'], 0, 60)); ?>            <?php echo strlen($task['notes']) > 60 ? '...' : ''; ?>
                                     </div>
                                 <?php endif; ?>
-                                
+
                                 <div class="task-actions">
                                     <div class="action-buttons">
                                         <?php if ($task['status'] != 'Completed'): ?>
-                                            <button onclick="updateTaskStatus(<?php echo $task['id']; ?>, '<?php echo $task['status'] == 'Todo' ? 'In Progress' : 'Completed'; ?>')" 
-                                                    class="action-btn btn-success">
+                                            <button
+                                                onclick="updateTaskStatus(<?php echo $task['id']; ?>, '<?php echo $task['status'] == 'Todo' ? 'In Progress' : 'Completed'; ?>')"
+                                                class="action-btn btn-success">
                                                 <?php echo $task['status'] == 'Todo' ? '🚀 Start' : '✅ Complete'; ?>
                                             </button>
                                         <?php endif; ?>
-                                        
+
                                         <?php if ($task['status'] == 'Completed'): ?>
-                                            <button onclick="updateTaskStatus(<?php echo $task['id']; ?>, 'Todo')" 
-                                                    class="action-btn btn-warning">
+                                            <button onclick="updateTaskStatus(<?php echo $task['id']; ?>, 'Todo')"
+                                                class="action-btn btn-warning">
                                                 🔄 Reopen
                                             </button>
                                         <?php endif; ?>
                                     </div>
-                                    
-                                    <button onclick="deleteTask(<?php echo $task['id']; ?>, '<?php echo htmlspecialchars($task['task_name']); ?>')" 
-                                            class="action-btn btn-danger" title="Delete Task">
+
+                                    <button
+                                        onclick="deleteTask(<?php echo $task['id']; ?>, '<?php echo htmlspecialchars($task['task_name']); ?>')"
+                                        class="action-btn btn-danger" title="Delete Task">
                                         🗑️
                                     </button>
                                 </div>
                             </div>
                         <?php endforeach; ?>
-                        
+
                         <?php if (empty($statusTasks)): ?>
                             <div class="empty-column">
                                 <div class="empty-icon">
-                                    <?php 
-                                    switch($status) {
-                                        case 'Todo': echo '📋'; break;
-                                        case 'In Progress': echo '🚀'; break;
-                                        case 'Completed': echo '✅'; break;
+                                    <?php
+                                    switch ($status) {
+                                        case 'Todo':
+                                            echo '📋';
+                                            break;
+                                        case 'In Progress':
+                                            echo '🚀';
+                                            break;
+                                        case 'Completed':
+                                            echo '✅';
+                                            break;
                                     }
                                     ?>
                                 </div>
                                 <div class="empty-text">
-                                    <?php 
-                                    switch($status) {
-                                        case 'Todo': echo 'No pending tasks'; break;
-                                        case 'In Progress': echo 'No active tasks'; break;
-                                        case 'Completed': echo 'No completed tasks'; break;
+                                    <?php
+                                    switch ($status) {
+                                        case 'Todo':
+                                            echo 'No pending tasks';
+                                            break;
+                                        case 'In Progress':
+                                            echo 'No active tasks';
+                                            break;
+                                        case 'Completed':
+                                            echo 'No completed tasks';
+                                            break;
                                     }
                                     ?>
                                 </div>
@@ -457,103 +430,111 @@ foreach ($tasks as $task) {
     </div>
 
     <style>
-    
-    
-    .stat-card {
+        .stat-card {
             background: linear-gradient(135deg, #9a9a9a00 0%, #00000008 100%);
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    box-shadow: none;
-}
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: none;
+        }
 
-.stat-title {
-    color: #000000;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    letter-spacing: 0.5px;
-}
+        .stat-title {
+            color: #000000;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
 
-.stat-change.positive {
-    color: #a1a1a1;
-    font-size: 12px;
-}
-.stat-card::before {
-    background: linear-gradient(135deg, #9a9a9a 0%, #000000 100%);
-}
-    .user-avatar{
+        .stat-change.positive {
+            color: #a1a1a1;
+            font-size: 12px;
+        }
+
+        .stat-card::before {
             background: linear-gradient(135deg, #9a9a9a 0%, #000000 100%);
-    }
-    
-    .table th, .table td {
-    padding: 17px;
-}
-       
-           .sidebar {
-    border-radius: 0px 20px 20px 0px;
-    width: 250px;
-    background: #ffffff;
-    padding: 1.5rem;
-    overflow-y: auto;
-  box-shadow: none;
-}
-    
-    
+        }
+
+        .user-avatar {
+            background: linear-gradient(135deg, #9a9a9a 0%, #000000 100%);
+        }
+
+        .table th,
+        .table td {
+            padding: 17px;
+        }
+
+        .sidebar {
+            border-radius: 0px 20px 20px 0px;
+            width: 250px;
+            background: #ffffff;
+            padding: 1.5rem;
+            overflow-y: auto;
+            box-shadow: none;
+        }
+
+
         .logo-icon img {
-    width: 40px;   /* ya jo bhi size chahiye */
-    height: auto;
-}
+            width: 40px;
+            /* ya jo bhi size chahiye */
+            height: auto;
+        }
 
-.logo-icon {
-    background: #0000!important;}
-        
+        .logo-icon {
+            background: #0000 !important;
+        }
+
         .main-content {
-    background: #fafafa !important;
-}
-       .nav-item {
-    gap: 10px;
-    color: #000000;
-    margin-bottom: -0.75rem;
-    font-size: 14px;
-} 
+            background: #fafafa !important;
+        }
+
+        .nav-item {
+            gap: 10px;
+            color: #000000;
+            margin-bottom: -0.75rem;
+            font-size: 14px;
+        }
+
         .nav-item:hover {
-    padding: 8px 20px;
-}
+            padding: 8px 20px;
+        }
+
         .nav-item.active {
-    background: #171717 !important;
-    color: #fff !important;
-    font-weight: 600 !important;
-}
+            background: #171717 !important;
+            color: #fff !important;
+            font-weight: 600 !important;
+        }
 
-.nav-title {
-    color: #000000;
-    margin-bottom: 0px;
-}
+        .nav-title {
+            color: #000000;
+            margin-bottom: 0px;
+        }
+
         .header {
-    border: solid 1px #e5e7eb !important;
-    overflow: hidden;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    background: white;
-    box-shadow:none !important;
-    padding: 1.5rem !important;
-    border-radius: 12px !important;
-}
+            border: solid 1px #e5e7eb !important;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: white;
+            box-shadow: none !important;
+            padding: 1.5rem !important;
+            border-radius: 12px !important;
+        }
 
-.header h1 {
-    font-size: 16px;
-    font-weight: 600;
-}
-.header p {
-    font-size: 12px;
-    margin-top: 0px;
-}
+        .header h1 {
+            font-size: 16px;
+            font-weight: 600;
+        }
 
-        
-         .btn {
+        .header p {
+            font-size: 12px;
+            margin-top: 0px;
+        }
+
+
+        .btn {
             padding: 8px 20px;
             border: none;
             border-radius: 8px;
@@ -568,7 +549,7 @@ foreach ($tasks as $task) {
         }
 
         .btn-primary {
-                box-shadow: none !important;
+            box-shadow: none !important;
             background: #171717;
             color: white;
         }
@@ -581,8 +562,8 @@ foreach ($tasks as $task) {
             background: #f3f4f6;
             color: #374151;
         }
-        
-        
+
+
         /* 6-Card Grid */
         .stats-grid-6 {
             display: grid;
@@ -591,7 +572,7 @@ foreach ($tasks as $task) {
             margin-bottom: 2rem;
         }
 
-        
+
 
         /* Alert Styles */
         .alert {
@@ -884,7 +865,7 @@ foreach ($tasks as $task) {
         function toggleTaskForm() {
             const form = document.getElementById('taskForm');
             const isVisible = form.style.display !== 'none';
-            
+
             if (isVisible) {
                 form.style.display = 'none';
                 document.body.style.overflow = 'auto';
@@ -910,7 +891,7 @@ foreach ($tasks as $task) {
         }
 
         // Auto-hide alert messages
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
                 setTimeout(() => {
@@ -923,7 +904,7 @@ foreach ($tasks as $task) {
             // Close modal when clicking outside
             const modal = document.getElementById('taskForm');
             if (modal) {
-                modal.addEventListener('click', function(e) {
+                modal.addEventListener('click', function (e) {
                     if (e.target === modal) {
                         toggleTaskForm();
                     }
@@ -931,7 +912,7 @@ foreach ($tasks as $task) {
             }
 
             // Close modal with Escape key
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape') {
                     const taskModal = document.getElementById('taskForm');
                     if (taskModal && taskModal.style.display !== 'none') {
@@ -942,4 +923,5 @@ foreach ($tasks as $task) {
         });
     </script>
 </body>
+
 </html>

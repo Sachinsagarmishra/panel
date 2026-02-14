@@ -25,100 +25,42 @@ try {
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $projects = $stmt->fetchAll();
-    
+
     // Get clients for filter dropdown
     $clientsStmt = $pdo->query("SELECT id, name, brand_name FROM clients ORDER BY name");
     $allClients = $clientsStmt->fetchAll();
-    
+
     // Calculate statistics
     $totalProjects = count($projects);
-    $activeProjects = count(array_filter($projects, function($p) { return $p['status'] == 'In Progress'; }));
-    $completedProjects = count(array_filter($projects, function($p) { return $p['status'] == 'Done'; }));
-    $ideaProjects = count(array_filter($projects, function($p) { return $p['status'] == 'Idea'; }));
-    
-} catch(PDOException $e) {
+    $activeProjects = count(array_filter($projects, function ($p) {
+        return $p['status'] == 'In Progress'; }));
+    $completedProjects = count(array_filter($projects, function ($p) {
+        return $p['status'] == 'Done'; }));
+    $ideaProjects = count(array_filter($projects, function ($p) {
+        return $p['status'] == 'Idea'; }));
+
+} catch (PDOException $e) {
     $error = "Error: " . $e->getMessage();
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projects</title>
     <link href="assets/style.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
 
 </head>
+
 <body>
     <div class="container">
-        <!-- Sidebar -->
-        <nav class="sidebar">
-           <div class="logo">
-    <div class="logo-icon">
-        <img src="https://sachindesign.com/assets/img/Sachin's%20photo.png" alt="Logo Icon" />
-    </div>
-    <div class="logo-text">Sachindesign</div>
-</div>
-
-            <div class="nav-section">
-                <div class="nav-title">Overview</div>
-                <a href="index.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fas fa-chart-bar"></i></span>
-                    <span>Dashboard</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Client Management</div>
-                <a href="clients.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-circle-user"></i></span>
-                    <span>Clients</span>
-                </a>
-                <a href="projects.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-copy"></i></span>
-                    <span>Projects</span>
-                </a>
-                <a href="tasks.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-pen-to-square"></i></span>
-                    <span>Tasks</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Business</div>
-                <a href="invoices.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-chess-king"></i></span>
-                    <span>Invoices</span>
-                </a>
-                <a href="paymentlink.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-solid fa-link"></i></span>
-                    <span>Payment Link</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Settings</div>
-                <a href="bank-accounts.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-gem"></i></span>
-                    <span>Bank Accounts</span>
-                </a>
-                <a href="currencies.php" class="nav-item">
-                    <span class="nav-item-icon">💱</span>
-                    <span>Currencies</span>
-                </a>
-            </div>
-            
-                <div class="nav-section" style="margin-top: auto; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
-        <a href="logout.php" class="nav-item logout-item" onclick="return confirm('Are you sure you want to logout?')">
-                    <span class="nav-item-icon"><i class="fa-regular fa-share-from-square"></i></span>
-            <span>Logout</span>
-        </a>
-    </div>
-    
-        </nav>
+        <?php include 'includes/sidebar.php'; ?>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -207,8 +149,7 @@ try {
                     <select class="form-select" style="width: auto;" onchange="filterByClient()">
                         <option value="">All Clients</option>
                         <?php foreach ($allClients as $client): ?>
-                            <option value="<?php echo $client['id']; ?>" 
-                                    <?php echo $clientFilter == $client['id'] ? 'selected' : ''; ?>>
+                            <option value="<?php echo $client['id']; ?>" <?php echo $clientFilter == $client['id'] ? 'selected' : ''; ?>>
                                 <?php echo htmlspecialchars($client['name']); ?>
                                 <?php if ($client['brand_name']): ?>
                                     (<?php echo htmlspecialchars($client['brand_name']); ?>)
@@ -217,7 +158,7 @@ try {
                         <?php endforeach; ?>
                     </select>
                 </div>
-                
+
                 <div class="filter-group">
                     <a href="add-project.php" class="btn btn-secondary">
                         <span>Add Project</span>
@@ -251,7 +192,8 @@ try {
                                     <div style="font-size: 3rem; margin-bottom: 1rem;">📁</div>
                                     <div style="font-weight: 600; margin-bottom: 0.5rem;">No projects yet</div>
                                     <div>Create your first project to get started!</div>
-                                    <a href="add-project.php" class="btn btn-primary" style="margin-top: 1rem;">➕ Add Project</a>
+                                    <a href="add-project.php" class="btn btn-primary" style="margin-top: 1rem;">➕ Add
+                                        Project</a>
                                 </td>
                             </tr>
                         <?php else: ?>
@@ -264,7 +206,8 @@ try {
                                             </div>
                                             <?php if ($project['deliverables']): ?>
                                                 <div style="color: #64748b; font-size: 0.875rem; line-height: 1.4;">
-                                                    📋 <?php echo htmlspecialchars(substr($project['deliverables'], 0, 80)) . (strlen($project['deliverables']) > 80 ? '...' : ''); ?>
+                                                    📋
+                                                    <?php echo htmlspecialchars(substr($project['deliverables'], 0, 80)) . (strlen($project['deliverables']) > 80 ? '...' : ''); ?>
                                                 </div>
                                             <?php endif; ?>
                                             <div style="color: #64748b; font-size: 0.75rem; margin-top: 0.25rem;">
@@ -290,16 +233,16 @@ try {
                                     <td>
                                         <?php if ($project['services']): ?>
                                             <div class="services-tags">
-                                                <?php 
+                                                <?php
                                                 $services = json_decode($project['services'], true);
                                                 if (is_array($services)):
-                                                    foreach ($services as $service): 
-                                                ?>
-                                                    <span class="service-tag"><?php echo htmlspecialchars($service); ?></span>
-                                                <?php 
+                                                    foreach ($services as $service):
+                                                        ?>
+                                                        <span class="service-tag"><?php echo htmlspecialchars($service); ?></span>
+                                                    <?php
                                                     endforeach;
                                                 else:
-                                                ?>
+                                                    ?>
                                                     <span class="service-tag">General</span>
                                                 <?php endif; ?>
                                             </div>
@@ -311,43 +254,55 @@ try {
                                         <?php if ($project['start_date'] && $project['end_date']): ?>
                                             <div style="font-size: 0.875rem;">
                                                 <div style="margin-bottom: 0.25rem;">
-                                                    <strong>Start:</strong> <?php echo date('M j, Y', strtotime($project['start_date'])); ?>
+                                                    <strong>Start:</strong>
+                                                    <?php echo date('M j, Y', strtotime($project['start_date'])); ?>
                                                 </div>
-                                                
+
                                             </div>
                                         <?php else: ?>
                                             <span style="color: #94a3b8;">No timeline set</span>
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <span class="status <?php echo strtolower(str_replace(' ', '-', $project['status'])); ?>">
-                                            <?php 
-                                            switch($project['status']) {
-                                                case 'Idea': echo '💡 Idea'; break;
-                                                case 'In Progress': echo '🚀 In Progress'; break;
-                                                case 'Review': echo '👁️ Review'; break;
-                                                case 'Done': echo '✅ Done'; break;
-                                                default: echo $project['status'];
+                                        <span
+                                            class="status <?php echo strtolower(str_replace(' ', '-', $project['status'])); ?>">
+                                            <?php
+                                            switch ($project['status']) {
+                                                case 'Idea':
+                                                    echo '💡 Idea';
+                                                    break;
+                                                case 'In Progress':
+                                                    echo '🚀 In Progress';
+                                                    break;
+                                                case 'Review':
+                                                    echo '👁️ Review';
+                                                    break;
+                                                case 'Done':
+                                                    echo '✅ Done';
+                                                    break;
+                                                default:
+                                                    echo $project['status'];
                                             }
                                             ?>
                                         </span>
                                     </td>
                                     <td>
                                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                            <button onclick="viewProject(<?php echo $project['id']; ?>)" 
-                                                    class="action-btn btn-secondary" title="View Details">
+                                            <button onclick="viewProject(<?php echo $project['id']; ?>)"
+                                                class="action-btn btn-secondary" title="View Details">
                                                 <i class="fa-regular fa-eye"></i>
                                             </button>
-                                            <button onclick="editProject(<?php echo $project['id']; ?>)" 
-                                                    class="action-btn btn-secondary" title="Edit Project">
+                                            <button onclick="editProject(<?php echo $project['id']; ?>)"
+                                                class="action-btn btn-secondary" title="Edit Project">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </button>
-                                            <button onclick="updateStatus(<?php echo $project['id']; ?>)" 
-                                                    class="action-btn btn-success" title="Update Status">
+                                            <button onclick="updateStatus(<?php echo $project['id']; ?>)"
+                                                class="action-btn btn-success" title="Update Status">
                                                 <i class="fa-regular fa-circle-check"></i>
                                             </button>
-                                            <button onclick="deleteProject(<?php echo $project['id']; ?>, '<?php echo htmlspecialchars($project['title']); ?>')" 
-                                                    class="action-btn btn-danger" title="Delete Project">
+                                            <button
+                                                onclick="deleteProject(<?php echo $project['id']; ?>, '<?php echo htmlspecialchars($project['title']); ?>')"
+                                                class="action-btn btn-danger" title="Delete Project">
                                                 <i class="fa-regular fa-trash-can"></i>
                                             </button>
                                         </div>
@@ -362,51 +317,10 @@ try {
     </div>
 
     <style>
-    
-    
-    .table th, .table td {
-    padding: 17px;
-}
-       
-           .sidebar {
-    border-radius: 0px 20px 20px 0px;
-    width: 250px;
-    background: #ffffff;
-    padding: 1.5rem;
-    overflow-y: auto;
-  box-shadow: none;
-}
-    
-    
-        .logo-icon img {
-    width: 40px;   /* ya jo bhi size chahiye */
-    height: auto;
-}
-
-.logo-icon {
-    background: #0000!important;}
-
-        .nav-item:hover {
-    padding: 8px 20px;
-}
-
-.nav-title {
-    color: #000000;
-    margin-bottom: 0px;
-}
-        .header {
-    border: solid 1px #e5e7eb !important;
-    overflow: hidden;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    background: white;
-    box-shadow:none !important;
-    padding: 1.5rem !important;
-    border-radius: 12px !important;
-}
-
+        .table th,
+        .table td {
+            padding: 17px;
+        }
 
         /* Alert Styles */
         .alert {
@@ -623,12 +537,12 @@ try {
             }
             window.location = url;
         }
-        
+
         function viewProject(id) {
             // Implement view project details
             alert('View project details for ID: ' + id + '\n\nThis will open project details page.');
         }
-        
+
         function editProject(id) {
             window.location.href = 'add-project.php?edit=' + id;
         }
@@ -707,11 +621,11 @@ try {
             // Show loading state
             const confirmBtn = document.querySelector('.delete-confirm-btn');
             const cancelBtn = document.querySelector('.delete-cancel-btn');
-            
+
             confirmBtn.innerHTML = '⏳ Deleting...';
             confirmBtn.disabled = true;
             cancelBtn.disabled = true;
-            
+
             // Redirect to delete script
             setTimeout(() => {
                 window.location.href = `delete-project.php?id=${projectId}`;
@@ -719,7 +633,7 @@ try {
         }
 
         // Auto-hide alert messages
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
                 setTimeout(() => {
@@ -730,14 +644,14 @@ try {
             });
 
             // Close modal when clicking outside
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 if (e.target.classList.contains('delete-confirmation')) {
                     closeDeleteModal();
                 }
             });
 
             // Close modal with Escape key
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape') {
                     closeDeleteModal();
                 }
@@ -745,4 +659,5 @@ try {
         });
     </script>
 </body>
+
 </html>

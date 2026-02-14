@@ -11,7 +11,7 @@ if ($_POST) {
     $ifsc_code = trim($_POST['ifsc_code']);
     $upi_id = trim($_POST['upi_id']);
     $is_default = isset($_POST['is_default']) ? 1 : 0;
-    
+
     // Get custom fields
     $custom_fields = [];
     if (isset($_POST['custom_fields']) && is_array($_POST['custom_fields'])) {
@@ -25,14 +25,14 @@ if ($_POST) {
         }
     }
     $custom_fields_json = json_encode($custom_fields);
-    
+
     try {
         if (isset($_POST['account_id']) && $_POST['account_id']) {
             // Update existing account
             if ($is_default) {
                 $pdo->exec("UPDATE bank_accounts SET is_default = FALSE");
             }
-            
+
             $stmt = $pdo->prepare("
                 UPDATE bank_accounts SET 
                 account_name = ?, bank_name = ?, account_number = ?, ifsc_code = ?, upi_id = ?, is_default = ?, custom_fields = ?
@@ -45,7 +45,7 @@ if ($_POST) {
             if ($is_default) {
                 $pdo->exec("UPDATE bank_accounts SET is_default = FALSE");
             }
-            
+
             $stmt = $pdo->prepare("
                 INSERT INTO bank_accounts (account_name, bank_name, account_number, ifsc_code, upi_id, is_default, custom_fields) 
                 VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -53,7 +53,7 @@ if ($_POST) {
             $stmt->execute([$account_name, $bank_name, $account_number, $ifsc_code, $upi_id, $is_default, $custom_fields_json]);
             $success = "Bank account added successfully!";
         }
-    } catch(PDOException $e) {
+    } catch (PDOException $e) {
         $error = "Error: " . $e->getMessage();
     }
 }
@@ -62,88 +62,27 @@ if ($_POST) {
 try {
     $accountsStmt = $pdo->query("SELECT * FROM bank_accounts ORDER BY is_default DESC, account_name ASC");
     $bankAccounts = $accountsStmt->fetchAll();
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     $error = "Error: " . $e->getMessage();
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bank Accounts</title>
     <link href="assets/style.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="container">
-        
-         <!-- Sidebar -->
-        <nav class="sidebar">
-           <div class="logo">
-    <div class="logo-icon">
-        <img src="https://sachindesign.com/assets/img/Sachin's%20photo.png" alt="Logo Icon" />
-    </div>
-    <div class="logo-text">Sachindesign</div>
-</div>
 
-            <div class="nav-section">
-                <div class="nav-title">Overview</div>
-                <a href="index.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fas fa-chart-bar"></i></span>
-                    <span>Dashboard</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Client Management</div>
-                <a href="clients.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-circle-user"></i></span>
-                    <span>Clients</span>
-                </a>
-                <a href="projects.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-copy"></i></span>
-                    <span>Projects</span>
-                </a>
-                <a href="tasks.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-pen-to-square"></i></span>
-                    <span>Tasks</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Business</div>
-                <a href="invoices.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-chess-king"></i></span>
-                    <span>Invoices</span>
-                </a>
-                <a href="paymentlink.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-solid fa-link"></i></span>
-                    <span>Payment Link</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Settings</div>
-                <a href="bank-accounts.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-gem"></i></span>
-                    <span>Bank Accounts</span>
-                </a>
-                <a href="currencies.php" class="nav-item">
-                    <span class="nav-item-icon">💱</span>
-                    <span>Currencies</span>
-                </a>
-            </div>
-            
-                <div class="nav-section" style="margin-top: auto; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
-        <a href="logout.php" class="nav-item logout-item" onclick="return confirm('Are you sure you want to logout?')">
-                    <span class="nav-item-icon"><i class="fa-regular fa-share-from-square"></i></span>
-            <span>Logout</span>
-        </a>
-    </div>
-        </nav>
+        <?php include 'includes/sidebar.php'; ?>
 
         <main class="main-content">
             <header class="header fade-in">
@@ -188,45 +127,47 @@ try {
                         <h2 id="formTitle">Add Bank Account</h2>
                         <button type="button" onclick="toggleAccountForm()" class="close-btn">✕</button>
                     </div>
-                    
+
                     <form method="POST" id="accountFormElement">
                         <input type="hidden" id="account_id" name="account_id">
-                        
+
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
                             <div>
                                 <div class="form-group">
                                     <label class="form-label" for="account_name">Account Name *</label>
-                                    <input type="text" id="account_name" name="account_name" class="form-input" 
-                                           placeholder="e.g., Business Savings" required>
+                                    <input type="text" id="account_name" name="account_name" class="form-input"
+                                        placeholder="e.g., Business Savings" required>
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-label" for="bank_name">Bank Name *</label>
-                                    <input type="text" id="bank_name" name="bank_name" class="form-input" 
-                                           placeholder="e.g., HDFC Bank" required>
+                                    <input type="text" id="bank_name" name="bank_name" class="form-input"
+                                        placeholder="e.g., HDFC Bank" required>
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-label" for="account_number">Account Number *</label>
-                                    <input type="text" id="account_number" name="account_number" class="form-input" required>
+                                    <input type="text" id="account_number" name="account_number" class="form-input"
+                                        required>
                                 </div>
                             </div>
 
                             <div>
                                 <div class="form-group">
                                     <label class="form-label" for="ifsc_code">IFSC Code</label>
-                                    <input type="text" id="ifsc_code" name="ifsc_code" class="form-input" 
-                                           placeholder="e.g., HDFC0001234">
+                                    <input type="text" id="ifsc_code" name="ifsc_code" class="form-input"
+                                        placeholder="e.g., HDFC0001234">
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-label" for="upi_id">UPI ID</label>
-                                    <input type="text" id="upi_id" name="upi_id" class="form-input" 
-                                           placeholder="e.g., business@paytm">
+                                    <input type="text" id="upi_id" name="upi_id" class="form-input"
+                                        placeholder="e.g., business@paytm">
                                 </div>
 
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.5rem; color: #374151; font-weight: 600;">
+                                    <label
+                                        style="display: flex; align-items: center; gap: 0.5rem; color: #374151; font-weight: 600;">
                                         <input type="checkbox" id="is_default" name="is_default" style="margin: 0;">
                                         Set as default account
                                     </label>
@@ -236,20 +177,23 @@ try {
 
                         <!-- Custom Fields Section -->
                         <div class="form-group">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                                 <label class="form-label">Additional Details</label>
-                                <button type="button" onclick="addCustomField()" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                                <button type="button" onclick="addCustomField()" class="btn btn-secondary"
+                                    style="padding: 0.5rem 1rem;">
                                     ➕ Add Field
                                 </button>
                             </div>
-                            
+
                             <div id="customFieldsContainer">
                                 <!-- Custom fields will be added here dynamically -->
                             </div>
                         </div>
 
                         <div class="form-actions">
-                            <button type="button" onclick="toggleAccountForm()" class="btn btn-secondary">Cancel</button>
+                            <button type="button" onclick="toggleAccountForm()"
+                                class="btn btn-secondary">Cancel</button>
                             <button type="submit" class="btn btn-primary">Save Account</button>
                         </div>
                     </form>
@@ -268,12 +212,13 @@ try {
                         <div class="stat-card">
                             <?php if ($account['is_default']): ?>
                                 <div style="position: absolute; top: 0.5rem; right: 0.5rem;">
-                                    <span style="background: #10b981; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
-                                         Default
+                                    <span
+                                        style="background: #10b981; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                                        Default
                                     </span>
                                 </div>
                             <?php endif; ?>
-                            
+
                             <div class="stat-header">
                                 <div>
                                     <div class="stat-title"><?php echo htmlspecialchars($account['account_name']); ?></div>
@@ -282,18 +227,18 @@ try {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div style="margin-top: 1rem; color: #64748b; font-size: 0.875rem;">
                                 <div style="margin-bottom: 0.5rem;">
                                     <strong>Account:</strong> ****<?php echo substr($account['account_number'], -4); ?>
                                 </div>
-                                
+
                                 <?php if ($account['ifsc_code']): ?>
                                     <div style="margin-bottom: 0.5rem;">
                                         <strong>IFSC:</strong> <?php echo htmlspecialchars($account['ifsc_code']); ?>
                                     </div>
                                 <?php endif; ?>
-                                
+
                                 <?php if ($account['upi_id']): ?>
                                     <div style="margin-bottom: 0.5rem;">
                                         <strong>UPI:</strong> <?php echo htmlspecialchars($account['upi_id']); ?>
@@ -301,43 +246,44 @@ try {
                                 <?php endif; ?>
 
                                 <?php if ($account['custom_fields']): ?>
-                                    <?php 
+                                    <?php
                                     $customFields = json_decode($account['custom_fields'], true);
                                     if (is_array($customFields)):
                                         foreach ($customFields as $field):
-                                    ?>
-                                        <div style="margin-bottom: 0.5rem;">
-                                            <strong><?php echo htmlspecialchars($field['label']); ?>:</strong> 
-                                            <?php echo htmlspecialchars($field['value']); ?>
-                                        </div>
-                                    <?php 
+                                            ?>
+                                            <div style="margin-bottom: 0.5rem;">
+                                                <strong><?php echo htmlspecialchars($field['label']); ?>:</strong>
+                                                <?php echo htmlspecialchars($field['value']); ?>
+                                            </div>
+                                        <?php
                                         endforeach;
                                     endif;
                                     ?>
                                 <?php endif; ?>
                             </div>
-                            
+
                             <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                                <button onclick="editAccount(<?php echo htmlspecialchars(json_encode($account)); ?>)" 
-                                        class="btn btn-secondary action-btn" title="Edit Account">
+                                <button onclick="editAccount(<?php echo htmlspecialchars(json_encode($account)); ?>)"
+                                    class="btn btn-secondary action-btn" title="Edit Account">
                                     <i class="fa-regular fa-pen-to-square"></i>
                                 </button>
-                                
+
                                 <?php if (!$account['is_default']): ?>
-                                    <button onclick="setDefault(<?php echo $account['id']; ?>)" 
-                                            class="btn btn-success action-btn" title="Set as Default">
+                                    <button onclick="setDefault(<?php echo $account['id']; ?>)" class="btn btn-success action-btn"
+                                        title="Set as Default">
                                         <i class="fa-regular fa-sun"></i>
                                     </button>
                                 <?php endif; ?>
-                                
-                                <button onclick="viewAccountDetails(<?php echo htmlspecialchars(json_encode($account)); ?>)" 
-                                        class="btn btn-secondary action-btn" title="View Details">
+
+                                <button onclick="viewAccountDetails(<?php echo htmlspecialchars(json_encode($account)); ?>)"
+                                    class="btn btn-secondary action-btn" title="View Details">
                                     <i class="fa-regular fa-eye"></i>
                                 </button>
-                                
-                                <button onclick="deleteAccount(<?php echo $account['id']; ?>, '<?php echo htmlspecialchars($account['account_name']); ?>')" 
-                                        class="btn btn-danger action-btn" title="Delete Account">
-                                   <i class="fa-regular fa-trash-can"></i>
+
+                                <button
+                                    onclick="deleteAccount(<?php echo $account['id']; ?>, '<?php echo htmlspecialchars($account['account_name']); ?>')"
+                                    class="btn btn-danger action-btn" title="Delete Account">
+                                    <i class="fa-regular fa-trash-can"></i>
                                 </button>
                             </div>
                         </div>
@@ -348,87 +294,96 @@ try {
     </div>
 
     <style>
-    .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-    .stat-card {
-    background: linear-gradient(135deg, #9a9a9a00 0%, #00000008 100%);
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    box-shadow: none;
-}
-.stat-card::before {
-    background: linear-gradient(135deg, #9a9a9a 0%, #000000 100%);
-}
-           
-           .sidebar {
-    border-radius: 0px 20px 20px 0px;
-    width: 250px;
-    background: #ffffff;
-    padding: 1.5rem;
-    overflow-y: auto;
-  box-shadow: none;
-}
-    
-    
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #9a9a9a00 0%, #00000008 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: none;
+        }
+
+        .stat-card::before {
+            background: linear-gradient(135deg, #9a9a9a 0%, #000000 100%);
+        }
+
+        .sidebar {
+            border-radius: 0px 20px 20px 0px;
+            width: 250px;
+            background: #ffffff;
+            padding: 1.5rem;
+            overflow-y: auto;
+            box-shadow: none;
+        }
+
+
         .logo-icon img {
-    width: 40px;   /* ya jo bhi size chahiye */
-    height: auto;
-}
+            width: 40px;
+            /* ya jo bhi size chahiye */
+            height: auto;
+        }
 
-.logo-icon {
-    background: #0000!important;}
-        
+        .logo-icon {
+            background: #0000 !important;
+        }
+
         .main-content {
-    background: #fafafa !important;
-}
-       .nav-item {
-    gap: 10px;
-    color: #000000;
-    margin-bottom: -0.75rem;
-    font-size: 14px;
-} 
+            background: #fafafa !important;
+        }
+
+        .nav-item {
+            gap: 10px;
+            color: #000000;
+            margin-bottom: -0.75rem;
+            font-size: 14px;
+        }
+
         .nav-item:hover {
-    padding: 8px 20px;
-}
+            padding: 8px 20px;
+        }
+
         .nav-item.active {
-    background: #171717 !important;
-    color: #fff !important;
-    font-weight: 600 !important;
-}
+            background: #171717 !important;
+            color: #fff !important;
+            font-weight: 600 !important;
+        }
 
-.nav-title {
-    color: #000000;
-    margin-bottom: 0px;
-}
+        .nav-title {
+            color: #000000;
+            margin-bottom: 0px;
+        }
+
         .header {
-    border: solid 1px #e5e7eb !important;
-    overflow: hidden;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    background: white;
-    box-shadow:none !important;
-    padding: 1.5rem !important;
-    border-radius: 12px !important;
-}
+            border: solid 1px #e5e7eb !important;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: white;
+            box-shadow: none !important;
+            padding: 1.5rem !important;
+            border-radius: 12px !important;
+        }
 
-.header h1 {
-    font-size: 16px;
-    font-weight: 600;
-}
-.header p {
-    font-size: 12px;
-    margin-top: 0px;
-}
+        .header h1 {
+            font-size: 16px;
+            font-weight: 600;
+        }
 
-        
-         .btn {
+        .header p {
+            font-size: 12px;
+            margin-top: 0px;
+        }
+
+
+        .btn {
             padding: 8px 20px;
             border: none;
             border-radius: 8px;
@@ -443,7 +398,7 @@ try {
         }
 
         .btn-primary {
-                box-shadow: none !important;
+            box-shadow: none !important;
             background: #171717;
             color: white;
         }
@@ -456,6 +411,7 @@ try {
             background: #f3f4f6;
             color: #374151;
         }
+
         /* Modal Styles */
         .form-modal {
             position: fixed;
@@ -717,9 +673,9 @@ try {
             const form = document.getElementById('accountForm');
             const formTitle = document.getElementById('formTitle');
             const formElement = document.getElementById('accountFormElement');
-            
+
             const isVisible = form.style.display !== 'none';
-            
+
             if (isVisible) {
                 form.style.display = 'none';
                 document.body.style.overflow = 'auto';
@@ -727,7 +683,7 @@ try {
             } else {
                 form.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
-                
+
                 if (account) {
                     // Edit mode
                     populateForm(account);
@@ -755,12 +711,12 @@ try {
             document.getElementById('ifsc_code').value = account.ifsc_code || '';
             document.getElementById('upi_id').value = account.upi_id || '';
             document.getElementById('is_default').checked = account.is_default == 1;
-            
+
             // Load custom fields
             const customFieldsContainer = document.getElementById('customFieldsContainer');
             customFieldsContainer.innerHTML = '';
             customFieldIndex = 0;
-            
+
             if (account.custom_fields) {
                 try {
                     const customFields = JSON.parse(account.custom_fields);
@@ -794,7 +750,7 @@ try {
                     <button type="button" class="remove-field-btn" onclick="removeCustomField(this)" title="Remove Field">✕</button>
                 </div>
             `;
-            
+
             container.appendChild(fieldDiv);
             customFieldIndex++;
         }
@@ -818,15 +774,15 @@ try {
             details += `Name: ${account.account_name}\n`;
             details += `Bank: ${account.bank_name}\n`;
             details += `Account Number: ${account.account_number}\n`;
-            
+
             if (account.ifsc_code) {
                 details += `IFSC: ${account.ifsc_code}\n`;
             }
-            
+
             if (account.upi_id) {
                 details += `UPI: ${account.upi_id}\n`;
             }
-            
+
             if (account.custom_fields) {
                 try {
                     const customFields = JSON.parse(account.custom_fields);
@@ -840,11 +796,11 @@ try {
                     console.error('Error parsing custom fields:', e);
                 }
             }
-            
+
             if (account.is_default == 1) {
                 details += `\n⭐ This is your default account`;
             }
-            
+
             alert(details);
         }
 
@@ -909,11 +865,11 @@ try {
             // Show loading state
             const confirmBtn = document.querySelector('.delete-confirm-btn');
             const cancelBtn = document.querySelector('.delete-cancel-btn');
-            
+
             confirmBtn.innerHTML = '⏳ Deleting...';
             confirmBtn.disabled = true;
             cancelBtn.disabled = true;
-            
+
             // Redirect to delete script
             setTimeout(() => {
                 window.location.href = `delete-bank-account.php?id=${accountId}`;
@@ -921,7 +877,7 @@ try {
         }
 
         // Auto-hide alert messages
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
                 setTimeout(() => {
@@ -932,7 +888,7 @@ try {
             });
 
             // Close modal when clicking outside
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 if (e.target.classList.contains('form-modal')) {
                     toggleAccountForm();
                 }
@@ -942,7 +898,7 @@ try {
             });
 
             // Close modal with Escape key
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 if (e.key === 'Escape') {
                     const accountModal = document.getElementById('accountForm');
                     if (accountModal && accountModal.style.display !== 'none') {
@@ -954,4 +910,5 @@ try {
         });
     </script>
 </body>
+
 </html>

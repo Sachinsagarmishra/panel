@@ -8,19 +8,19 @@ try {
     // Total clients
     $totalClientsStmt = $pdo->query("SELECT COUNT(*) as count FROM clients");
     $totalClients = $totalClientsStmt->fetch()['count'];
-    
+
     // Active projects
     $activeProjectsStmt = $pdo->query("SELECT COUNT(*) as count FROM projects WHERE status IN ('Idea', 'In Progress', 'Review')");
     $activeProjects = $activeProjectsStmt->fetch()['count'];
-    
+
     // Total projects
     $totalProjectsStmt = $pdo->query("SELECT COUNT(*) as count FROM projects");
     $totalProjects = $totalProjectsStmt->fetch()['count'];
-    
+
     // Completed projects
     $completedStmt = $pdo->query("SELECT COUNT(*) as count FROM projects WHERE status = 'Done'");
     $completedProjects = $completedStmt->fetch()['count'];
-    
+
     // New clients this month
     $newClientsStmt = $pdo->query("
         SELECT COUNT(*) as count FROM clients 
@@ -28,7 +28,7 @@ try {
         AND MONTH(created_at) = MONTH(CURRENT_DATE())
     ");
     $newClientsThisMonth = $newClientsStmt->fetch()['count'];
-    
+
     // Total revenue by currency
     $totalRevenueStmt = $pdo->query("
         SELECT i.currency, curr.symbol, SUM(i.amount) as total_amount
@@ -39,7 +39,7 @@ try {
         ORDER BY total_amount DESC
     ");
     $totalRevenue = $totalRevenueStmt->fetchAll();
-    
+
     // Earnings this month by currency
     $monthlyEarningsStmt = $pdo->query("
         SELECT i.currency, curr.symbol, SUM(i.amount) as monthly_amount
@@ -52,7 +52,7 @@ try {
         ORDER BY monthly_amount DESC
     ");
     $monthlyEarnings = $monthlyEarningsStmt->fetchAll();
-    
+
     // Upcoming deadlines (next 7 days)
     $upcomingStmt = $pdo->query("
         SELECT p.title, p.end_date, c.name as client_name, p.status
@@ -64,7 +64,7 @@ try {
         LIMIT 5
     ");
     $upcomingDeadlines = $upcomingStmt->fetchAll();
-    
+
     // Recent tasks (last 10)
     $recentTasksStmt = $pdo->query("
         SELECT t.task_name, t.status, t.priority, t.due_date, t.created_at,
@@ -76,7 +76,7 @@ try {
         LIMIT 8
     ");
     $recentTasks = $recentTasksStmt->fetchAll();
-    
+
     // Recent clients (last 10)
     $recentClientsStmt = $pdo->query("
         SELECT name, brand_name, email, country, created_at
@@ -85,122 +85,55 @@ try {
         LIMIT 8
     ");
     $recentClients = $recentClientsStmt->fetchAll();
-    
-} catch(PDOException $e) {
+
+} catch (PDOException $e) {
     $error = "Error: " . $e->getMessage();
 }
 
 // Helper function to format currency display
-function formatCurrencyDisplay($revenues, $limit = 2) {
+function formatCurrencyDisplay($revenues, $limit = 2)
+{
     if (empty($revenues)) {
         return '$0.00';
     }
-    
+
     $output = '';
     $count = 0;
     foreach ($revenues as $revenue) {
-        if ($count >= $limit) break;
+        if ($count >= $limit)
+            break;
         $symbol = $revenue['symbol'] ?? '$';
         $amount = number_format($revenue['total_amount'] ?? $revenue['monthly_amount'], 2);
         $output .= '<div>' . $symbol . $amount . '</div>';
         $count++;
     }
-    
+
     if (count($revenues) > $limit) {
         $remaining = count($revenues) - $limit;
         $output .= '<div style="font-size: 0.8rem; color: #64748b;">+' . $remaining . ' more</div>';
     }
-    
+
     return $output;
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sachindesign Dashboard</title>
     <link href="assets/style.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
+
 <body>
     <div class="container">
-            
-            <!-- Sidebar -->
-        <nav class="sidebar">
-           <div class="logo">
-    <div class="logo-icon">
-        <img src="https://sachindesign.com/assets/img/Sachin's%20photo.png" alt="Logo Icon" />
-    </div>
-    <div class="logo-text">Sachindesign</div>
-</div>
 
-            <div class="nav-section">
-                <div class="nav-title">Overview</div>
-                <a href="index.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fas fa-chart-bar"></i></span>
-                    <span>Dashboard</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Client Management</div>
-                <a href="clients.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-circle-user"></i></span>
-                    <span>Clients</span>
-                </a>
-                <a href="projects.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-copy"></i></span>
-                    <span>Projects</span>
-                </a>
-                <a href="tasks.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-pen-to-square"></i></span>
-                    <span>Tasks</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Business</div>
-                <a href="invoices.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-chess-king"></i></span>
-                    <span>Invoices</span>
-                </a>
-                <a href="paymentlink.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-solid fa-link"></i></span>
-                    <span>Payment Link</span>
-                </a>
-            </div>
-            
-             <div class="nav-section">
-                <div class="nav-title">Security</div>
-                <a href="passwords.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-face-grin"></i></i></span>
-                    <span>Passwords</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Settings</div>
-                <a href="bank-accounts.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-gem"></i></span>
-                    <span>Bank Accounts</span>
-                </a>
-                <a href="currencies.php" class="nav-item">
-                    <span class="nav-item-icon">💱</span>
-                    <span>Currencies</span>
-                </a>
-            </div>
-            
-                <div class="nav-section" style="margin-top: auto; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
-        <a href="logout.php" class="nav-item logout-item" onclick="return confirm('Are you sure you want to logout?')">
-                    <span class="nav-item-icon"><i class="fa-regular fa-share-from-square"></i></span>
-            <span>Logout</span>
-        </a>
-    </div>
-    
-        </nav>
+        <?php include 'includes/sidebar.php'; ?>
 
         <!-- Main Content Area -->
         <main class="main-content">
@@ -339,11 +272,14 @@ function formatCurrencyDisplay($revenues, $limit = 2) {
                                 <div class="deadline-item">
                                     <div class="deadline-info">
                                         <div class="deadline-title"><?php echo htmlspecialchars($deadline['title']); ?></div>
-                                        <div class="deadline-client"><?php echo htmlspecialchars($deadline['client_name']); ?></div>
+                                        <div class="deadline-client"><?php echo htmlspecialchars($deadline['client_name']); ?>
+                                        </div>
                                     </div>
                                     <div class="deadline-date">
-                                        <div class="date-text"><?php echo date('M j', strtotime($deadline['end_date'])); ?></div>
-                                        <span class="status-mini <?php echo strtolower(str_replace(' ', '-', $deadline['status'])); ?>">
+                                        <div class="date-text"><?php echo date('M j', strtotime($deadline['end_date'])); ?>
+                                        </div>
+                                        <span
+                                            class="status-mini <?php echo strtolower(str_replace(' ', '-', $deadline['status'])); ?>">
                                             <?php echo $deadline['status']; ?>
                                         </span>
                                     </div>
@@ -378,13 +314,19 @@ function formatCurrencyDisplay($revenues, $limit = 2) {
                                         <?php endif; ?>
                                     </div>
                                     <div class="task-status">
-                                        <?php 
-                                            switch($task['priority']) {
-                                                case 'High': echo 'P1'; break;
-                                                case 'Medium': echo 'P2'; break;
-                                                case 'Low': echo 'P3'; break;
-                                            }
-                                            ?>
+                                        <?php
+                                        switch ($task['priority']) {
+                                            case 'High':
+                                                echo 'P1';
+                                                break;
+                                            case 'Medium':
+                                                echo 'P2';
+                                                break;
+                                            case 'Low':
+                                                echo 'P3';
+                                                break;
+                                        }
+                                        ?>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -414,18 +356,24 @@ function formatCurrencyDisplay($revenues, $limit = 2) {
                                         <div class="client-name"><?php echo htmlspecialchars($client['name']); ?></div>
                                         <div class="client-details">
                                             <?php if ($client['brand_name']): ?>
-                                                 <?php echo htmlspecialchars($client['brand_name']); ?>
+                                                <?php echo htmlspecialchars($client['brand_name']); ?>
                                             <?php else: ?>
-                                                 <?php echo htmlspecialchars($client['email']); ?>
+                                                <?php echo htmlspecialchars($client['email']); ?>
                                             <?php endif; ?>
                                         </div>
                                     </div>
                                     <div class="client-country">
-                                        <?php 
+                                        <?php
                                         $countryFlags = [
-                                            'India' => '🇮🇳', 'United States' => '🇺🇸', 'United Kingdom' => '🇬🇧',
-                                            'Canada' => '🇨🇦', 'Australia' => '🇦🇺', 'Germany' => '🇩🇪',
-                                            'France' => '🇫🇷', 'Singapore' => '🇸🇬', 'UAE' => '🇦🇪'
+                                            'India' => '🇮🇳',
+                                            'United States' => '🇺🇸',
+                                            'United Kingdom' => '🇬🇧',
+                                            'Canada' => '🇨🇦',
+                                            'Australia' => '🇦🇺',
+                                            'Germany' => '🇩🇪',
+                                            'France' => '🇫🇷',
+                                            'Singapore' => '🇸🇬',
+                                            'UAE' => '🇦🇪'
                                         ];
                                         echo $countryFlags[$client['country']] ?? '🌍';
                                         ?>
@@ -440,93 +388,82 @@ function formatCurrencyDisplay($revenues, $limit = 2) {
     </div>
 
     <style>
-    .stat-card {
+        .stat-card {
             background: linear-gradient(135deg, #9a9a9a00 0%, #00000008 100%);
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    box-shadow: none;
-}
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: none;
+        }
 
-.stat-title {
-    color: #000000;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    letter-spacing: 0.5px;
-}
+        .stat-title {
+            color: #000000;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
 
-.stat-change.positive {
-    color: #a1a1a1;
-    font-size: 12px;
-}
-.stat-card::before {
-    background: linear-gradient(135deg, #9a9a9a 0%, #000000 100%);
-}
-    .user-avatar{
+        .stat-change.positive {
+            color: #a1a1a1;
+            font-size: 12px;
+        }
+
+        .stat-card::before {
             background: linear-gradient(135deg, #9a9a9a 0%, #000000 100%);
-    }
-    
-    .table th, .table td {
-    padding: 17px;
-}
-       
-           .sidebar {
-    border-radius: 0px 20px 20px 0px;
-    width: 250px;
-    background: #ffffff;
-    padding: 1.5rem;
-    overflow-y: auto;
-  box-shadow: none;
-}
-    
-    
-        .logo-icon img {
-    width: 40px;   /* ya jo bhi size chahiye */
-    height: auto;
-}
+        }
 
-.logo-icon {
-    background: #0000!important;}
-        
+        .user-avatar {
+            background: linear-gradient(135deg, #9a9a9a 0%, #000000 100%);
+        }
+
+        .table th,
+        .table td {
+            padding: 17px;
+        }
+
         .main-content {
-    background: #fafafa !important;
-}
-       .nav-item {
-    gap: 10px;
-    color: #000000;
-    margin-bottom: -0.75rem;
-    font-size: 14px;
-} 
-        .nav-item:hover {
-    padding: 8px 20px;
-}
-        .nav-item.active {
-    background: #171717 !important;
-    color: #fff !important;
-    font-weight: 600 !important;
-}
+            background: #fafafa !important;
+        }
 
-.nav-title {
-    color: #000000;
-    margin-bottom: 0px;
-}
+        .nav-item {
+            gap: 10px;
+            color: #000000;
+            margin-bottom: -0.75rem;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            padding: 8px 20px;
+        }
+
+        .nav-item.active {
+            background: #171717 !important;
+            color: #fff !important;
+            font-weight: 600 !important;
+        }
+
+        .nav-title {
+            color: #000000;
+            margin-bottom: 0px;
+        }
+
         .header {
-    border: solid 1px #e5e7eb !important;
-    overflow: hidden;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    background: white;
-    box-shadow:none !important;
-    padding: 1.5rem !important;
-    border-radius: 12px !important;
-}
+            border: solid 1px #e5e7eb !important;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: white;
+            box-shadow: none !important;
+            padding: 1.5rem !important;
+            border-radius: 12px !important;
+        }
 
 
         .btn-primary {
-                box-shadow: none !important;
+            box-shadow: none !important;
             background: #171717;
             color: white;
         }
@@ -539,8 +476,8 @@ function formatCurrencyDisplay($revenues, $limit = 2) {
             background: #f3f4f6;
             color: #374151;
         }
-        
-        
+
+
         /* 6-Card Grid */
         .stats-grid-6 {
             display: grid;
@@ -684,7 +621,7 @@ function formatCurrencyDisplay($revenues, $limit = 2) {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-           background: linear-gradient(135deg, #9a9a9a 0%, #000000 100%);
+            background: linear-gradient(135deg, #9a9a9a 0%, #000000 100%);
             color: white;
             display: flex;
             align-items: center;
@@ -762,7 +699,7 @@ function formatCurrencyDisplay($revenues, $limit = 2) {
             .stats-grid-6 {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
+
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
@@ -788,7 +725,7 @@ function formatCurrencyDisplay($revenues, $limit = 2) {
 
     <script>
         // Add fade-in animation on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const elements = document.querySelectorAll('.fade-in');
             elements.forEach((el, index) => {
                 setTimeout(() => {
@@ -799,4 +736,5 @@ function formatCurrencyDisplay($revenues, $limit = 2) {
         });
     </script>
 </body>
+
 </html>

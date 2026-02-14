@@ -10,7 +10,7 @@ if ($_POST) {
     $symbol = trim($_POST['symbol']);
     $exchange_rate = floatval($_POST['exchange_rate']);
     $is_active = isset($_POST['is_active']) ? 1 : 0;
-    
+
     try {
         if (isset($_POST['update_id']) && $_POST['update_id']) {
             // Update existing currency
@@ -23,7 +23,7 @@ if ($_POST) {
             $stmt->execute([$code, $name, $symbol, $exchange_rate, $is_active]);
             $success = "Currency added successfully!";
         }
-    } catch(PDOException $e) {
+    } catch (PDOException $e) {
         $error = "Error: " . $e->getMessage();
     }
 }
@@ -32,84 +32,26 @@ if ($_POST) {
 try {
     $currenciesStmt = $pdo->query("SELECT * FROM currencies ORDER BY is_active DESC, code ASC");
     $currencies = $currenciesStmt->fetchAll();
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     $error = "Error: " . $e->getMessage();
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Currency Management - FreelancePro</title>
     <link href="assets/style.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="container">
-       <!-- Sidebar -->
-        <nav class="sidebar">
-           <div class="logo">
-    <div class="logo-icon">
-        <img src="https://sachindesign.com/assets/img/Sachin's%20photo.png" alt="Logo Icon" />
-    </div>
-    <div class="logo-text">Sachindesign</div>
-</div>
-
-            <div class="nav-section">
-                <div class="nav-title">Overview</div>
-                <a href="index.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fas fa-chart-bar"></i></span>
-                    <span>Dashboard</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Client Management</div>
-                <a href="clients.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-circle-user"></i></span>
-                    <span>Clients</span>
-                </a>
-                <a href="projects.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-copy"></i></span>
-                    <span>Projects</span>
-                </a>
-                <a href="tasks.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-pen-to-square"></i></span>
-                    <span>Tasks</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Business</div>
-                <a href="invoices.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-chess-king"></i></span>
-                    <span>Invoices</span>
-                </a>
-            </div>
-            
-            <div class="nav-section">
-                <div class="nav-title">Settings</div>
-                <a href="bank-accounts.php" class="nav-item">
-                    <span class="nav-item-icon"><i class="fa-regular fa-gem"></i></span>
-                    <span>Bank Accounts</span>
-                </a>
-                <a href="currencies.php" class="nav-item">
-                    <span class="nav-item-icon">💱</span>
-                    <span>Currencies</span>
-                </a>
-            </div>
-            
-                <div class="nav-section" style="margin-top: auto; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
-        <a href="logout.php" class="nav-item logout-item" onclick="return confirm('Are you sure you want to logout?')">
-                    <span class="nav-item-icon"><i class="fa-regular fa-share-from-square"></i></span>
-            <span>Logout</span>
-        </a>
-    </div>
-    
-        </nav>
+        <?php include 'includes/sidebar.php'; ?>
 
 
         <main class="main-content">
@@ -138,36 +80,36 @@ try {
                         <h2 id="formTitle">💱 Add New Currency</h2>
                         <button type="button" onclick="toggleCurrencyForm()" class="close-btn">✕</button>
                     </div>
-                    
+
                     <form method="POST" id="currencyFormElement">
                         <input type="hidden" id="update_id" name="update_id">
-                        
+
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                             <div>
                                 <div class="form-group">
                                     <label class="form-label" for="code">Currency Code *</label>
-                                    <input type="text" id="code" name="code" class="form-input" 
-                                           placeholder="USD, INR, AED..." maxlength="10" required>
+                                    <input type="text" id="code" name="code" class="form-input"
+                                        placeholder="USD, INR, AED..." maxlength="10" required>
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-label" for="name">Currency Name *</label>
-                                    <input type="text" id="name" name="name" class="form-input" 
-                                           placeholder="US Dollar" required>
+                                    <input type="text" id="name" name="name" class="form-input" placeholder="US Dollar"
+                                        required>
                                 </div>
                             </div>
 
                             <div>
                                 <div class="form-group">
                                     <label class="form-label" for="symbol">Symbol *</label>
-                                    <input type="text" id="symbol" name="symbol" class="form-input" 
-                                           placeholder="$, ₹, د.إ..." maxlength="10" required>
+                                    <input type="text" id="symbol" name="symbol" class="form-input"
+                                        placeholder="$, ₹, د.إ..." maxlength="10" required>
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-label" for="exchange_rate">Exchange Rate to USD *</label>
-                                    <input type="number" id="exchange_rate" name="exchange_rate" class="form-input" 
-                                           step="0.0001" min="0" placeholder="1.0000" required>
+                                    <input type="number" id="exchange_rate" name="exchange_rate" class="form-input"
+                                        step="0.0001" min="0" placeholder="1.0000" required>
                                     <small style="color: #64748b;">1 USD = ? of this currency</small>
                                 </div>
                             </div>
@@ -181,7 +123,8 @@ try {
                         </div>
 
                         <div class="form-actions">
-                            <button type="button" onclick="toggleCurrencyForm()" class="btn btn-secondary">Cancel</button>
+                            <button type="button" onclick="toggleCurrencyForm()"
+                                class="btn btn-secondary">Cancel</button>
                             <button type="submit" class="btn btn-primary">Save Currency</button>
                         </div>
                     </form>
@@ -228,11 +171,13 @@ try {
                                 </td>
                                 <td>
                                     <div>
-                                        1 USD = <?php echo number_format($currency['exchange_rate'], 4); ?> <?php echo $currency['code']; ?>
+                                        1 USD = <?php echo number_format($currency['exchange_rate'], 4); ?>
+                                        <?php echo $currency['code']; ?>
                                     </div>
                                     <?php if ($currency['code'] != 'USD'): ?>
                                         <div style="font-size: 0.875rem; color: #64748b;">
-                                            1 <?php echo $currency['code']; ?> = $<?php echo number_format(1 / $currency['exchange_rate'], 4); ?>
+                                            1 <?php echo $currency['code']; ?> =
+                                            $<?php echo number_format(1 / $currency['exchange_rate'], 4); ?>
                                         </div>
                                     <?php endif; ?>
                                 </td>
@@ -243,11 +188,14 @@ try {
                                 </td>
                                 <td>
                                     <div style="display: flex; gap: 0.5rem;">
-                                        <button onclick="editCurrency(<?php echo htmlspecialchars(json_encode($currency)); ?>)" 
-                                                class="btn btn-secondary" style="padding: 0.5rem;" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
-                                        <button onclick="toggleCurrencyStatus(<?php echo $currency['id']; ?>, <?php echo $currency['is_active'] ? 'false' : 'true'; ?>)" 
-                                                class="btn btn-secondary" style="padding: 0.5rem;" 
-                                                title="<?php echo $currency['is_active'] ? 'Deactivate' : 'Activate'; ?>">
+                                        <button
+                                            onclick="editCurrency(<?php echo htmlspecialchars(json_encode($currency)); ?>)"
+                                            class="btn btn-secondary" style="padding: 0.5rem;" title="Edit"><i
+                                                class="fa-regular fa-pen-to-square"></i></button>
+                                        <button
+                                            onclick="toggleCurrencyStatus(<?php echo $currency['id']; ?>, <?php echo $currency['is_active'] ? 'false' : 'true'; ?>)"
+                                            class="btn btn-secondary" style="padding: 0.5rem;"
+                                            title="<?php echo $currency['is_active'] ? 'Deactivate' : 'Activate'; ?>">
                                             <?php echo $currency['is_active'] ? '<i class="fa-regular fa-circle-pause"></i>' : '<i class="fa-regular fa-circle-play"></i>'; ?>
                                         </button>
                                     </div>
@@ -352,9 +300,9 @@ try {
             const form = document.getElementById('currencyForm');
             const formTitle = document.getElementById('formTitle');
             const formElement = document.getElementById('currencyFormElement');
-            
+
             const isVisible = form.style.display !== 'none';
-            
+
             if (isVisible) {
                 form.style.display = 'none';
                 document.body.style.overflow = 'auto';
@@ -364,7 +312,7 @@ try {
             } else {
                 form.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
-                
+
                 if (currency) {
                     // Edit mode
                     document.getElementById('update_id').value = currency.id;
@@ -374,7 +322,7 @@ try {
                     document.getElementById('exchange_rate').value = currency.exchange_rate;
                     document.getElementById('is_active').checked = currency.is_active == 1;
                     formTitle.textContent = '✏️ Edit Currency';
-                    
+
                     // Disable code field for editing
                     document.getElementById('code').disabled = true;
                 } else {
@@ -395,7 +343,7 @@ try {
         }
 
         // Auto-hide alerts
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const alerts = document.querySelectorAll('.alert');
             alerts.forEach(alert => {
                 setTimeout(() => {
@@ -408,7 +356,7 @@ try {
             // Close modal when clicking outside
             const modal = document.getElementById('currencyForm');
             if (modal) {
-                modal.addEventListener('click', function(e) {
+                modal.addEventListener('click', function (e) {
                     if (e.target === modal) {
                         toggleCurrencyForm();
                     }
@@ -417,4 +365,5 @@ try {
         });
     </script>
 </body>
+
 </html>
