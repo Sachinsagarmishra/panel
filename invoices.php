@@ -189,8 +189,12 @@ try {
 
     $params = [];
     if ($statusFilter) {
-        $sql .= " AND i.status = ?";
-        $params[] = $statusFilter;
+        if ($statusFilter === 'Recurring') {
+            $sql .= " AND i.invoice_number LIKE 'INV-R-%'";
+        } else {
+            $sql .= " AND i.status = ?";
+            $params[] = $statusFilter;
+        }
     }
     $sql .= " ORDER BY i.created_at DESC LIMIT $limit OFFSET $offset";
 
@@ -296,6 +300,7 @@ include 'includes/header.php';
             <option value="Paid" <?php echo $statusFilter == 'Paid' ? 'selected' : ''; ?>>✅ Paid</option>
             <option value="Unpaid" <?php echo $statusFilter == 'Unpaid' ? 'selected' : ''; ?>>⏳ Unpaid</option>
             <option value="Overdue" <?php echo $statusFilter == 'Overdue' ? 'selected' : ''; ?>>⚠️ Overdue</option>
+        <option value="Recurring" <?php echo $statusFilter == 'Recurring' ? 'selected' : ''; ?>>🔄 Recurring</option>
         </select>
     </div>
 
@@ -689,8 +694,9 @@ include 'includes/header.php';
                                 </button>
 
                                 <!-- Recurring Action -->
-                                <button onclick="openRecurringModal(<?php echo $invoice['id']; ?>, '<?php echo htmlspecialchars($invoice['invoice_number']); ?>')" 
-                                        class="action-btn" title="Make Recurring" style="background: #8b5cf6; color: white;">
+                                <button
+                                    onclick="openRecurringModal(<?php echo $invoice['id']; ?>, '<?php echo htmlspecialchars($invoice['invoice_number']); ?>')"
+                                    class="action-btn" title="Make Recurring" style="background: #8b5cf6; color: white;">
                                     <i class="fas fa-arrows-rotate"></i>
                                 </button>
                             </div>
@@ -713,9 +719,10 @@ include 'includes/header.php';
         <form method="POST" style="padding: 2rem;">
             <input type="hidden" name="setup_recurring" value="1">
             <input type="hidden" name="source_invoice_id" id="recurring_invoice_id">
-            
+
             <p style="margin-bottom: 1.5rem; color: #64748b; line-height: 1.5;">
-                This will create a new recurring schedule using the details from Invoice <strong id="recurring_invoice_num"></strong>.
+                This will create a new recurring schedule using the details from Invoice <strong
+                    id="recurring_invoice_num"></strong>.
             </p>
 
             <div class="form-group">
@@ -729,7 +736,8 @@ include 'includes/header.php';
 
             <div class="form-group">
                 <label class="form-label">Next Invoice Date</label>
-                <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Pick the day of the month for automated creation.</p>
+                <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Pick the day of the month for
+                    automated creation.</p>
                 <input type="date" name="next_date" class="form-input" required value="<?php echo date('Y-m-d'); ?>">
             </div>
 
@@ -742,16 +750,16 @@ include 'includes/header.php';
 </div>
 
 <script>
-function openRecurringModal(id, num) {
-    document.getElementById('recurring_invoice_id').value = id;
-    document.getElementById('recurring_invoice_num').innerText = num;
-    document.getElementById('recurringModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-function closeRecurringModal() {
-    document.getElementById('recurringModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
+    function openRecurringModal(id, num) {
+        document.getElementById('recurring_invoice_id').value = id;
+        document.getElementById('recurring_invoice_num').innerText = num;
+        document.getElementById('recurringModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    function closeRecurringModal() {
+        document.getElementById('recurringModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
 </script>
 </main>
 </div>

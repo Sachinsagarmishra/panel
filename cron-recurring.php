@@ -16,8 +16,15 @@ function generateRecurringInvoices($pdo)
         try {
             $pdo->beginTransaction();
 
-            // 2. Generate Invoice Number (e.g., INV-R-ID-DATE)
-            $inv_no = "INV-R-" . $r['id'] . "-" . date('ymd', strtotime($r['next_date']));
+            // 2. Generate Sequential Invoice Number (Standard format)
+            $nextInvoiceStmt = $pdo->query("SELECT COUNT(*) + 1 as next_number FROM invoices");
+            $nextNumber = $nextInvoiceStmt->fetch()['next_number'];
+            $inv_no = 'INV-' . date('Y') . '-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+            // Append -R to identify it as recurring without breaking the sequence if you want, 
+            // OR just keep it standard. Let's keep it standard but add a prefix if desired.
+            // Actually, to make the filter work, it should have the 'INV-R-' prefix or a specific flag.
+            // Let's use 'INV-R-YYYY-XXX' for automated ones.
+            $inv_no = 'INV-R-' . date('Y') . '-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
             // 3. Insert into invoices table
             $ins = $pdo->prepare("
