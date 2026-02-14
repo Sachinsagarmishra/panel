@@ -196,12 +196,14 @@ try {
         SELECT i.*, c.name as client_name, c.email as client_email, c.brand_name as client_brand,
                p.title as project_title, ba.account_name, ba.bank_name,
                curr.symbol as currency_symbol, curr.name as currency_name,
-               (SELECT COUNT(*) FROM recurring_invoices ri WHERE ri.source_invoice_id = i.id AND ri.status = 'active') as is_recurring_active
+               ri.next_date as recurring_next_date, ri.frequency as recurring_frequency, ri.status as recurring_status,
+               (SELECT COUNT(*) FROM recurring_invoices ri2 WHERE ri2.source_invoice_id = i.id AND ri2.status = 'active') as is_recurring_active
         FROM invoices i 
         JOIN clients c ON i.client_id = c.id 
         LEFT JOIN projects p ON i.project_id = p.id
         LEFT JOIN bank_accounts ba ON i.bank_account = ba.id
         LEFT JOIN currencies curr ON i.currency = curr.code
+        LEFT JOIN recurring_invoices ri ON ri.source_invoice_id = i.id
         WHERE 1=1
     ";
 
@@ -334,6 +336,10 @@ include 'includes/header.php';
         <a href="currencies.php" class="btn btn-secondary">
             <span>💱</span>
             <span>Manage Currencies</span>
+        </a>
+        <a href="?status=Recurring" class="btn btn-secondary <?php echo $statusFilter == 'Recurring' ? 'active' : ''; ?>">
+            <span>🔄</span>
+            <span>Recurring Invoices</span>
         </a>
     </div>
 </div>
@@ -634,9 +640,14 @@ include 'includes/header.php';
                         </td>
                         <td>
                             <div style="font-size: 0.875rem;">
-                                <div><strong>Issue:</strong> <?php echo date('M j, Y', strtotime($invoice['issue_date'])); ?>
-                                </div>
-                                <div><strong>Due:</strong> <?php echo date('M j, Y', strtotime($invoice['due_date'])); ?></div>
+                                <?php if ($statusFilter === 'Recurring' && $invoice['recurring_next_date']): ?>
+                                    <div><strong>Next Bill:</strong> <span style="color: #4f46e5; font-weight: 600;"><?php echo date('M j, Y', strtotime($invoice['recurring_next_date'])); ?></span></div>
+                                    <div style="color: #64748b; font-size: 0.75rem;">Frequency: <?php echo ucfirst($invoice['recurring_frequency']); ?></div>
+                                <?php else: ?>
+                                    <div><strong>Issue:</strong> <?php echo date('M j, Y', strtotime($invoice['issue_date'])); ?></div>
+                                    <div><strong>Due:</strong> <?php echo date('M j, Y', strtotime($invoice['due_date'])); ?></div>
+                                <?php endif; ?>
+                                
                                 <?php
                                 $daysLeft = ceil((strtotime($invoice['due_date']) - time()) / (60 * 60 * 24));
                                 if ($invoice['status'] != 'Paid'):
