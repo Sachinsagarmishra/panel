@@ -499,7 +499,7 @@ if ($type === 'pdf') {
             </div>
             <div class="header-right">
                 <div class="company-logo">
-                    <img src="https://sachindesign.com/assets/img/Sachin's%20photo.png" alt="Sachin Logo" />
+                    <img src="https://sachindesign.com/assets/img/Favicon.png" alt="Sachin Logo" />
                 </div>
                 <div class="company-name">Sachindesign.in</div>
                 <div class="currency-badge">
