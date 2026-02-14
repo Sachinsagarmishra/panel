@@ -48,6 +48,7 @@ try {
     $paypalMethods = $methodsStmt->fetchAll();
 } catch (PDOException $e) {
     $error = "Error: " . $e->getMessage();
+    $paypalMethods = [];
 }
 ?>
 
@@ -68,15 +69,13 @@ include 'includes/header.php';
 <!-- Success/Error Messages -->
 <?php if (isset($success)): ?>
     <div class="alert alert-success">
-        ✅
-        <?php echo htmlspecialchars($success); ?>
+        ✅ <?php echo htmlspecialchars($success); ?>
     </div>
 <?php endif; ?>
 
 <?php if (isset($error)): ?>
     <div class="alert alert-error">
-        ❌
-        <?php echo htmlspecialchars($error); ?>
+        ❌ <?php echo htmlspecialchars($error); ?>
     </div>
 <?php endif; ?>
 
@@ -121,25 +120,27 @@ include 'includes/header.php';
 </div>
 
 <!-- PayPal Methods Grid -->
-<div class="dashboard-grid fade-in">
+<div class="payment-grid-container fade-in">
     <?php if (empty($paypalMethods)): ?>
         <div class="empty-state">
             <div class="empty-text">No PayPal methods added yet!</div>
         </div>
     <?php else: ?>
         <?php foreach ($paypalMethods as $method): ?>
-            <div class="dashboard-card">
-                <div class="dashboard-card-header">
-                    <div>
-                        <h3 style="display: flex; align-items: center; gap: 0.5rem;">
-                            <i class="fab fa-paypal" style="color: #003087;"></i>
+            <div class="payment-card">
+                <div class="payment-card-header">
+                    <div class="payment-card-title">
+                        <div class="payment-card-icon">
+                            <i class="fab fa-paypal"></i>
+                        </div>
+                        <div>
                             <?php echo htmlspecialchars($method['account_name']); ?>
                             <?php if ($method['is_default']): ?>
-                                <span class="status-mini done" style="font-size: 0.6rem;">DEFAULT</span>
+                                <span class="status-badge default">DEFAULT</span>
                             <?php endif; ?>
-                        </h3>
+                        </div>
                     </div>
-                    <div style="display: flex; gap: 0.5rem;">
+                    <div class="payment-card-actions">
                         <button onclick='editMethod(<?php echo json_encode($method); ?>)' class="btn btn-secondary"
                             style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Edit</button>
                         <a href="delete-paypal-method.php?id=<?php echo $method['id']; ?>"
@@ -148,24 +149,21 @@ include 'includes/header.php';
                             style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: #fee2e2; color: #dc2626;">Delete</a>
                     </div>
                 </div>
-                <div class="dashboard-card-content" style="padding: 1.5rem;">
-                    <div style="margin-bottom: 1rem;">
-                        <div
-                            style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">
-                            PayPal Email</div>
-                        <div style="font-weight: 500;">
-                            <?php echo htmlspecialchars($method['email']); ?>
-                        </div>
+
+                <div class="payment-card-body" style="flex-direction: column; gap: 0;">
+                    <div class="payment-detail-group">
+                        <div class="payment-detail-label">PayPal Email</div>
+                        <div class="payment-detail-value"><?php echo htmlspecialchars($method['email']); ?></div>
                     </div>
                     <?php if ($method['link']): ?>
-                        <div>
-                            <div
-                                style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">
-                                PayPal Link</div>
-                            <div style="font-weight: 500;"><a href="<?php echo htmlspecialchars($method['link']); ?>"
-                                    target="_blank">
+                        <div class="payment-detail-group">
+                            <div class="payment-detail-label">PayPal Link</div>
+                            <div class="payment-detail-value">
+                                <a href="<?php echo htmlspecialchars($method['link']); ?>" target="_blank"
+                                    style="color: #3b82f6; text-decoration: none;">
                                     <?php echo htmlspecialchars($method['link']); ?>
-                                </a></div>
+                                </a>
+                            </div>
                         </div>
                     <?php endif; ?>
                 </div>
@@ -173,50 +171,6 @@ include 'includes/header.php';
         <?php endforeach; ?>
     <?php endif; ?>
 </div>
-
-<style>
-    .form-modal {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1002;
-        padding: 1rem;
-    }
-
-    .form-content {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        width: 100%;
-        max-width: 500px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    }
-
-    .form-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-    }
-
-    .close-btn {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #64748b;
-    }
-
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 1.5rem;
-        margin-top: 2rem;
-    }
-</style>
 
 <script>
     function toggleMethodForm() {

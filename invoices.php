@@ -100,6 +100,24 @@ try {
     $bankAccountsStmt = $pdo->query("SELECT id, account_name, bank_name FROM bank_accounts ORDER BY account_name");
     $bankAccounts = $bankAccountsStmt->fetchAll();
 
+    // Fetch PayPal Methods safely
+    $paypalMethods = [];
+    try {
+        $paypalMethodsStmt = $pdo->query("SELECT id, account_name, email FROM paypal_methods ORDER BY account_name");
+        $paypalMethods = $paypalMethodsStmt->fetchAll();
+    } catch (PDOException $e) {
+        // Table might not exist yet
+    }
+
+    // Fetch UPI Methods safely
+    $upiMethods = [];
+    try {
+        $upiMethodsStmt = $pdo->query("SELECT id, account_name, upi_id FROM upi_methods ORDER BY account_name");
+        $upiMethods = $upiMethodsStmt->fetchAll();
+    } catch (PDOException $e) {
+        // Table might not exist yet
+    }
+
     // Get active currencies
     $currenciesStmt = $pdo->query("SELECT * FROM currencies WHERE is_active = 1 ORDER BY code");
     $activeCurrencies = $currenciesStmt->fetchAll();
@@ -285,7 +303,8 @@ include 'includes/header.php';
 
                     <div class="form-group">
                         <label class="form-label" for="payment_mode">Payment Mode</label>
-                        <select id="payment_mode" name="payment_mode" class="form-select" onchange="togglePaymentFields()">
+                        <select id="payment_mode" name="payment_mode" class="form-select"
+                            onchange="togglePaymentFields()">
                             <option value="">Select Mode...</option>
                             <option value="Bank Transfer">Bank Transfer</option>
                             <option value="PayPal">PayPal</option>
@@ -312,7 +331,8 @@ include 'includes/header.php';
                             <option value="">Select PayPal...</option>
                             <?php foreach ($paypalMethods as $method): ?>
                                 <option value="<?php echo $method['id']; ?>">
-                                    <?php echo htmlspecialchars($method['account_name']); ?> (<?php echo htmlspecialchars($method['email']); ?>)
+                                    <?php echo htmlspecialchars($method['account_name']); ?>
+                                    (<?php echo htmlspecialchars($method['email']); ?>)
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -324,7 +344,8 @@ include 'includes/header.php';
                             <option value="">Select UPI...</option>
                             <?php foreach ($upiMethods as $method): ?>
                                 <option value="<?php echo $method['id']; ?>">
-                                    <?php echo htmlspecialchars($method['account_name']); ?> (<?php echo htmlspecialchars($method['upi_id']); ?>)
+                                    <?php echo htmlspecialchars($method['account_name']); ?>
+                                    (<?php echo htmlspecialchars($method['upi_id']); ?>)
                                 </option>
                             <?php endforeach; ?>
                         </select>
