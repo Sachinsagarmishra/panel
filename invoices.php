@@ -317,28 +317,25 @@ include 'includes/header.php';
         <label class="form-label" style="margin-bottom: 0;">Filter by Status:</label>
         <select id="statusFilter" class="form-select" style="width: auto;" onchange="filterInvoices()">
             <option value="">All Status</option>
-            <option value="Paid" <?php echo $statusFilter == 'Paid' ? 'selected' : ''; ?>>✅ Paid</option>
-            <option value="Unpaid" <?php echo $statusFilter == 'Unpaid' ? 'selected' : ''; ?>>⏳ Unpaid</option>
-            <option value="Overdue" <?php echo $statusFilter == 'Overdue' ? 'selected' : ''; ?>>⚠️ Overdue</option>
-            <option value="Recurring" <?php echo $statusFilter == 'Recurring' ? 'selected' : ''; ?>>🔄 Recurring</option>
+            <option value="Paid" <?php echo $statusFilter == 'Paid' ? 'selected' : ''; ?>>Paid</option>
+            <option value="Unpaid" <?php echo $statusFilter == 'Unpaid' ? 'selected' : ''; ?>>Unpaid</option>
+            <option value="Overdue" <?php echo $statusFilter == 'Overdue' ? 'selected' : ''; ?>>Overdue</option>
+            <option value="Recurring" <?php echo $statusFilter == 'Recurring' ? 'selected' : ''; ?>>Recurring</option>
         </select>
     </div>
 
     <div class="filter-group">
         <a href="?status=Unpaid" class="btn btn-secondary">
-            <span>📋</span>
             <span>Pending Invoices</span>
         </a>
         <a href="?status=Overdue" class="btn btn-secondary">
-            <span>⚠️</span>
             <span>Overdue Invoices</span>
         </a>
         <a href="currencies.php" class="btn btn-secondary">
-            <span>💱</span>
             <span>Manage Currencies</span>
         </a>
-        <a href="?status=Recurring" class="btn btn-secondary <?php echo $statusFilter == 'Recurring' ? 'active' : ''; ?>">
-            <span>🔄</span>
+        <a href="?status=Recurring"
+            class="btn btn-secondary <?php echo $statusFilter == 'Recurring' ? 'active' : ''; ?>">
             <span>Recurring Invoices</span>
         </a>
     </div>
@@ -641,13 +638,17 @@ include 'includes/header.php';
                         <td>
                             <div style="font-size: 0.875rem;">
                                 <?php if ($statusFilter === 'Recurring' && $invoice['recurring_next_date']): ?>
-                                    <div><strong>Next Bill:</strong> <span style="color: #4f46e5; font-weight: 600;"><?php echo date('M j, Y', strtotime($invoice['recurring_next_date'])); ?></span></div>
-                                    <div style="color: #64748b; font-size: 0.75rem;">Frequency: <?php echo ucfirst($invoice['recurring_frequency']); ?></div>
+                                    <div><strong>Next Bill:</strong> <span
+                                            style="color: #4f46e5; font-weight: 600;"><?php echo date('M j, Y', strtotime($invoice['recurring_next_date'])); ?></span>
+                                    </div>
+                                    <div style="color: #64748b; font-size: 0.75rem;">Frequency:
+                                        <?php echo ucfirst($invoice['recurring_frequency']); ?></div>
                                 <?php else: ?>
-                                    <div><strong>Issue:</strong> <?php echo date('M j, Y', strtotime($invoice['issue_date'])); ?></div>
+                                    <div><strong>Issue:</strong> <?php echo date('M j, Y', strtotime($invoice['issue_date'])); ?>
+                                    </div>
                                     <div><strong>Due:</strong> <?php echo date('M j, Y', strtotime($invoice['due_date'])); ?></div>
                                 <?php endif; ?>
-                                
+
                                 <?php
                                 $daysLeft = ceil((strtotime($invoice['due_date']) - time()) / (60 * 60 * 24));
                                 if ($invoice['status'] != 'Paid'):
