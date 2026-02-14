@@ -721,7 +721,7 @@ include 'includes/header.php';
                                 <?php else: ?>
                                     <button
                                         onclick="openRecurringModal(<?php echo $invoice['id']; ?>, '<?php echo htmlspecialchars($invoice['invoice_number']); ?>', false)"
-                                        class="action-btn" title="Make Recurring" style="background: #8b5cf6; color: white;">
+                                        class="action-btn" title="Make Recurring" style="background: #e2e8f0; color: #64748b;">
                                         <i class="fas fa-arrows-rotate"></i>
                                     </button>
                                 <?php endif; ?>
@@ -746,9 +746,10 @@ include 'includes/header.php';
             <input type="hidden" name="setup_recurring" value="1">
             <input type="hidden" name="source_invoice_id" id="recurring_invoice_id">
             <input type="hidden" name="action" id="recurring_action" value="activate">
-            
+
             <p id="recurringModalDesc" style="margin-bottom: 1.5rem; color: #64748b; line-height: 1.5;">
-                This will create a new recurring schedule using the details from Invoice <strong id="recurring_invoice_num"></strong>.
+                This will create a new recurring schedule using the details from Invoice <strong
+                    id="recurring_invoice_num"></strong>.
             </p>
 
             <div id="recurringActivationFields">
@@ -763,54 +764,58 @@ include 'includes/header.php';
 
                 <div class="form-group">
                     <label class="form-label">Next Invoice Date</label>
-                    <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Pick the day of the month for automated creation.</p>
+                    <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem;">Pick the day of the month for
+                        automated creation.</p>
                     <input type="date" name="next_date" class="form-input" value="<?php echo date('Y-m-d'); ?>">
                 </div>
             </div>
 
             <div class="form-actions" style="margin-top: 2rem;">
                 <button type="button" onclick="closeRecurringModal()" class="btn btn-secondary">Cancel</button>
-                <button type="submit" id="recurringSubmitBtn" class="btn btn-primary" style="background: #8b5cf6;">Activate Now</button>
-                <button type="submit" id="recurringDeactivateBtn" class="btn btn-danger" style="display:none;" onclick="document.getElementById('recurring_action').value='deactivate'">Deactivate Automation</button>
+                <button type="submit" id="recurringSubmitBtn" class="btn btn-primary"
+                    style="background: #8b5cf6;">Activate Now</button>
+                <button type="submit" id="recurringDeactivateBtn" class="btn btn-danger" style="display:none;"
+                    onclick="document.getElementById('recurring_action').value='deactivate'">Deactivate
+                    Automation</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-function openRecurringModal(id, num, isActive) {
-    document.getElementById('recurring_invoice_id').value = id;
-    document.getElementById('recurring_invoice_num').innerText = num;
-    document.getElementById('recurringModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    function openRecurringModal(id, num, isActive) {
+        document.getElementById('recurring_invoice_id').value = id;
+        document.getElementById('recurring_invoice_num').innerText = num;
+        document.getElementById('recurringModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
 
-    const title = document.getElementById('recurringModalTitle');
-    const desc = document.getElementById('recurringModalDesc');
-    const fields = document.getElementById('recurringActivationFields');
-    const submitBtn = document.getElementById('recurringSubmitBtn');
-    const deactivateBtn = document.getElementById('recurringDeactivateBtn');
-    const actionInput = document.getElementById('recurring_action');
+        const title = document.getElementById('recurringModalTitle');
+        const desc = document.getElementById('recurringModalDesc');
+        const fields = document.getElementById('recurringActivationFields');
+        const submitBtn = document.getElementById('recurringSubmitBtn');
+        const deactivateBtn = document.getElementById('recurringDeactivateBtn');
+        const actionInput = document.getElementById('recurring_action');
 
-    if (isActive) {
-        title.innerText = '⚙️ Automation is Active';
-        desc.innerHTML = `Recurring automation is already active for Invoice <strong>${num}</strong>. Do you want to stop it?`;
-        fields.style.display = 'none';
-        submitBtn.style.display = 'none';
-        deactivateBtn.style.display = 'block';
-        actionInput.value = 'deactivate';
-    } else {
-        title.innerText = '🔄 Activate Automation';
-        desc.innerHTML = `This will create a new recurring schedule using the details from Invoice <strong>${num}</strong>.`;
-        fields.style.display = 'block';
-        submitBtn.style.display = 'block';
-        deactivateBtn.style.display = 'none';
-        actionInput.value = 'activate';
+        if (isActive) {
+            title.innerText = '⚙️ Automation is Active';
+            desc.innerHTML = `Recurring automation is already active for Invoice <strong>${num}</strong>. Do you want to stop it?`;
+            fields.style.display = 'none';
+            submitBtn.style.display = 'none';
+            deactivateBtn.style.display = 'block';
+            actionInput.value = 'deactivate';
+        } else {
+            title.innerText = '🔄 Activate Automation';
+            desc.innerHTML = `This will create a new recurring schedule using the details from Invoice <strong>${num}</strong>.`;
+            fields.style.display = 'block';
+            submitBtn.style.display = 'block';
+            deactivateBtn.style.display = 'none';
+            actionInput.value = 'activate';
+        }
     }
-}
-function closeRecurringModal() {
-    document.getElementById('recurringModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-}
+    function closeRecurringModal() {
+        document.getElementById('recurringModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
 </script>
 </main>
 </div>
