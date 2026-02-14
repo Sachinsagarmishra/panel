@@ -64,14 +64,14 @@ function formatCurrencyDisplay($revenues, $limit = 2)
 {
     if (empty($revenues)) {
         return '<div class="amount-wrapper masked">' .
-               '<div class="amount-actual"><div>$0.00</div></div>' .
-               '<div class="amount-masked">****</div>' .
-               '</div>';
+            '<div class="amount-actual"><div>$0.00</div></div>' .
+            '<div class="amount-masked">****</div>' .
+            '</div>';
     }
 
     $output = '<div class="amount-wrapper masked">';
     $visible_part = '';
-    
+
     $count = 0;
     foreach ($revenues as $revenue) {
         if ($count >= $limit)
@@ -86,7 +86,7 @@ function formatCurrencyDisplay($revenues, $limit = 2)
         $remaining = count($revenues) - $limit;
         $visible_part .= '<div style="font-size: 0.8rem; color: #64748b;">+' . $remaining . ' more</div>';
     }
-    
+
     $output .= '<div class="amount-actual">' . $visible_part . '</div>';
     $output .= '<div class="amount-masked">****</div>';
     $output .= '</div>';
@@ -192,7 +192,30 @@ include 'includes/header.php';
             <div>
                 <div class="stat-title">Monthly Earnings</div>
                 <div class="stat-value" style="font-size: 1.3rem;">
-                    <?php echo formatCurrencyDisplay($monthlyEarnings, 2); ?>
+                    <?php
+                    // Ensure USD and INR are always shown if active or at least once
+                    $displayEarnings = [];
+                    $foundCurrencies = array_column($monthlyEarnings, 'currency');
+
+                    // Add existing earnings
+                    foreach ($monthlyEarnings as $earning) {
+                        $displayEarnings[$earning['currency']] = $earning;
+                    }
+
+                    // Force add USD and INR if missing (with 0 values)
+                    if (!isset($displayEarnings['USD'])) {
+                        $displayEarnings['USD'] = ['currency' => 'USD', 'symbol' => '$', 'monthly_amount' => 0];
+                    }
+                    if (!isset($displayEarnings['INR'])) {
+                        $displayEarnings['INR'] = ['currency' => 'INR', 'symbol' => '₹', 'monthly_amount' => 0];
+                    }
+
+                    // Re-index for display function
+                    $finalEarnings = array_values($displayEarnings);
+
+                    // Custom display logic to ensure USD and INR show up
+                    echo formatCurrencyDisplay($finalEarnings, 5);
+                    ?>
                 </div>
             </div>
             <button class="toggle-visibility" onclick="togglePrivacy(this)">
@@ -204,6 +227,191 @@ include 'includes/header.php';
         </div>
     </div>
 </div>
+
+<!-- Revenue Analytics Chart -->
+<div class="chart-container fade-in" style="margin-bottom: 2rem;">
+    <div class="chart-header">
+        <h3>Revenue Analytics</h3>
+        <div class="chart-filters">
+            <button class="filter-btn active" onclick="updateChart('lifetime')">Lifetime</button>
+            <button class="filter-btn" onclick="updateChart('yearly')">Yearly</button>
+            <button class="filter-btn" onclick="updateChart('monthly')">Monthly</button>
+        </div>
+    </div>
+    <div class="chart-wrapper">
+        <canvas id="revenueChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let revenueChart = null;
+
+    async function updateChart(period) {
+        // Update active button state
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        try {
+            const response = await fetch(`get-revenue-data.php?period=${period}`);
+            const data = await response.json();
+
+            if (revenueChart) {
+                revenueChart.destroy();
+            }
+
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: data.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            titleColor: '#1e293b',
+                            bodyColor: '#1e293b',
+                            borderColor: '#e2e8f0',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f1f5f9',
+                                borderDash: [5, 5]
+                            },
+                            ticks: {
+                                color: '#64748b',
+                                font: { size: 11 }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#64748b',
+                                font: { size: 11 }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('Error fetching chart data:', error);
+        }
+    }
+
+    // Initialize with Lifetime data
+    document.addEventListener('DOMContentLoaded', () => {
+        updateChart('lifetime');
+    });
+</script>
+
+<style>
+    /* Chart Container Styling */
+    .chart-container {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .chart-header h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+    }
+
+    .chart-filters {
+        display: flex;
+        gap: 0.5rem;
+        background: #f1f5f9;
+        padding: 4px;
+        border-radius: 8px;
+    }
+
+    .filter-btn {
+        background: none;
+        border: none;
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #64748b;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+        color: #1e293b;
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    .filter-btn.active {
+        background: white;
+        color: #0f172a;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        font-weight: 600;
+    }
+
+    .chart-wrapper {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    @media (max-width: 768px) {
+        .chart-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .chart-filters {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .filter-btn {
+            flex: 1;
+            text-align: center;
+        }
+    }
+</style>
 
 <!-- Quick Actions -->
 <div class="quick-actions fade-in">
@@ -339,7 +547,7 @@ include 'includes/header.php';
         const card = btn.closest('.stat-card');
         const wrapper = card.querySelector('.amount-wrapper');
         const icon = btn.querySelector('i');
-        
+
         if (wrapper.classList.contains('masked')) {
             wrapper.classList.remove('masked');
             icon.classList.remove('fa-eye-slash');
