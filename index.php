@@ -71,24 +71,33 @@ try {
 function formatCurrencyDisplay($revenues, $limit = 2)
 {
     if (empty($revenues)) {
-        return '$0.00';
+        return '<div class="amount-wrapper masked">' .
+               '<div class="amount-actual"><div>$0.00</div></div>' .
+               '<div class="amount-masked">****</div>' .
+               '</div>';
     }
 
-    $output = '';
+    $output = '<div class="amount-wrapper masked">';
+    $visible_part = '';
+    
     $count = 0;
     foreach ($revenues as $revenue) {
         if ($count >= $limit)
             break;
         $symbol = $revenue['symbol'] ?? '$';
         $amount = number_format($revenue['total_amount'] ?? $revenue['monthly_amount'], 2);
-        $output .= '<div>' . $symbol . $amount . '</div>';
+        $visible_part .= '<div>' . $symbol . $amount . '</div>';
         $count++;
     }
 
     if (count($revenues) > $limit) {
         $remaining = count($revenues) - $limit;
-        $output .= '<div style="font-size: 0.8rem; color: #64748b;">+' . $remaining . ' more</div>';
+        $visible_part .= '<div style="font-size: 0.8rem; color: #64748b;">+' . $remaining . ' more</div>';
     }
+    
+    $output .= '<div class="amount-actual">' . $visible_part . '</div>';
+    $output .= '<div class="amount-masked">****</div>';
+    $output .= '</div>';
 
     return $output;
 }
@@ -150,6 +159,9 @@ include 'includes/header.php';
                     <?php echo formatCurrencyDisplay($totalRevenue, 2); ?>
                 </div>
             </div>
+            <button class="toggle-visibility" onclick="togglePrivacy(this)">
+                <i class="fa-regular fa-eye-slash"></i>
+            </button>
         </div>
         <div class="stat-change positive">
             <span>All time</span>
@@ -191,6 +203,9 @@ include 'includes/header.php';
                     <?php echo formatCurrencyDisplay($monthlyEarnings, 2); ?>
                 </div>
             </div>
+            <button class="toggle-visibility" onclick="togglePrivacy(this)">
+                <i class="fa-regular fa-eye-slash"></i>
+            </button>
         </div>
         <div class="stat-change positive">
             <span>This month</span>
@@ -428,6 +443,71 @@ include 'includes/header.php';
             grid-template-columns: 1fr;
         }
     }
+
+    /* Privacy Toggle Styles */
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .toggle-visibility {
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 4px;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        margin-top: -2px;
+        margin-right: -4px;
+    }
+
+    .toggle-visibility:hover {
+        color: #1e293b;
+        transform: scale(1.1);
+    }
+
+    .amount-wrapper.masked .amount-actual {
+        display: none;
+    }
+
+    .amount-wrapper.masked .amount-masked {
+        display: block;
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: #1e293b;
+        margin-top: 5px;
+    }
+
+    .amount-wrapper:not(.masked) .amount-masked {
+        display: none;
+    }
+
+    .amount-wrapper:not(.masked) .amount-actual {
+        display: block;
+    }
 </style>
+
+<script>
+    function togglePrivacy(btn) {
+        const card = btn.closest('.stat-card');
+        const wrapper = card.querySelector('.amount-wrapper');
+        const icon = btn.querySelector('i');
+        
+        if (wrapper.classList.contains('masked')) {
+            wrapper.classList.remove('masked');
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+            btn.style.color = '#1e293b';
+        } else {
+            wrapper.classList.add('masked');
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+            btn.style.color = '#94a3b8';
+        }
+    }
+</script>
 
 <?php include "includes/footer.php"; ?>
