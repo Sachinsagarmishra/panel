@@ -1,10 +1,10 @@
 <?php
 // This script can be called via Cron or manually
+date_default_timezone_set('Asia/Kolkata');
 require_once __DIR__ . '/config/database.php';
 
 function generateRecurringInvoices($pdo)
 {
-    echo "Checking for recurring invoices to generate...<br>";
     $today = date('Y-m-d');
 
     // 1. Get all active recurring templates due today or earlier
@@ -16,7 +16,7 @@ function generateRecurringInvoices($pdo)
         try {
             $pdo->beginTransaction();
 
-            // 2. Generate Invoice Number (e.g., INV-RECUR-ID-DATE)
+            // 2. Generate Invoice Number (e.g., INV-R-ID-DATE)
             $inv_no = "INV-R-" . $r['id'] . "-" . date('ymd', strtotime($r['next_date']));
 
             // 3. Insert into invoices table
@@ -28,7 +28,7 @@ function generateRecurringInvoices($pdo)
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Unpaid')
             ");
 
-            $due_date = date('Y-m-d', strtotime($r['next_date'] . ' + 7 days')); // Default 7 days due date
+            $due_date = date('Y-m-d', strtotime($r['next_date'] . ' + 7 days'));
 
             $ins->execute([
                 $inv_no,
@@ -58,32 +58,29 @@ function generateRecurringInvoices($pdo)
             }
 
             // 5. Update next_date in recurring table
-            $next_date = $r['next_date'];
-            switch ($r['frequency']) {
-                case 'weekly':
-                    $next_date = date('Y-m-d', strtotime($next_date . ' + 1 week'));
-                    break;
-                case 'monthly':
-                    $next_date = date('Y-m-d', strtotime($next_date . ' + 1 month'));
-                    break;
-                case 'yearly':
-                    $next_date = date('Y-m-d', strtotime($next_date . ' + 1 year'));
-                    break;
+            $current_next = is_string($r['next_date']) ? $r['next_date'] : date('Y-m-d');
+            $next_date_obj = new DateTime($current_next);
+
+            if ($r['frequency'] == 'weekly') {
+                $next_date_obj->modify('+1 week');
+            } elseif ($r['frequency'] == 'monthly') {
+                $next_date_obj->modify('+1 month');
+            } elseif ($r['frequency'] == 'yearly') {
+                $next_date_obj->modify('+1 year');
             }
+            $final_next_date = $next_date_obj->format('Y-m-d');
 
             $upd = $pdo->prepare("UPDATE recurring_invoices SET next_date = ?, last_generated_date = ? WHERE id = ?");
-            $upd->execute([$next_date, $today, $r['id']]);
+            $upd->execute([$final_next_date, $today, $r['id']]);
 
             $pdo->commit();
-            echo "SUCCESS: Generated invoice $inv_no for Client ID {$r['client_id']}<br>";
 
         } catch (Exception $e) {
             $pdo->rollBack();
-            echo "ERROR: Failed to generate invoice for recurring ID {$r['id']}: " . $e->getMessage() . "<br>";
         }
     }
-    echo "Done.";
 }
+
 
 // If accessed directly, run the function
 if (php_sapi_name() !== 'cli' || basename(__FILE__) == basename($_SERVER['PHP_SELF'])) {
