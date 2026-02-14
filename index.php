@@ -263,7 +263,8 @@ include 'includes/header.php';
                     <div class="filter-item" onclick="selectFilter('last_7_days', 'Last 7 days')">Last 7 days</div>
                     <div class="filter-item" onclick="selectFilter('last_28_days', 'Last 28 days')">Last 28 days</div>
                     <div class="filter-item" onclick="selectFilter('last_90_days', 'Last 90 days')">Last 90 days</div>
-                    <div class="filter-item" onclick="selectFilter('last_365_days', 'Last 365 days')">Last 365 days</div>
+                    <div class="filter-item" onclick="selectFilter('last_365_days', 'Last 365 days')">Last 365 days
+                    </div>
                     <div class="filter-item active" onclick="selectFilter('lifetime', 'Lifetime')">Lifetime</div>
                     <div class="filter-divider"></div>
                     <?php
@@ -271,7 +272,9 @@ include 'includes/header.php';
                     for ($i = 0; $i < 3; $i++):
                         $year = $currentYear - $i;
                         ?>
-                        <div class="filter-item" onclick="selectFilter('year', '<?php echo $year; ?>', '<?php echo $year; ?>')"><?php echo $year; ?></div>
+                        <div class="filter-item"
+                            onclick="selectFilter('year', '<?php echo $year; ?>', '<?php echo $year; ?>')">
+                            <?php echo $year; ?></div>
                     <?php endfor; ?>
                     <div class="filter-divider"></div>
                     <?php
@@ -280,7 +283,9 @@ include 'includes/header.php';
                         $date = date('Y-m', strtotime("-$i months"));
                         $label = date('F Y', strtotime("-$i months"));
                         ?>
-                        <div class="filter-item" onclick="selectFilter('month', '<?php echo $label; ?>', '<?php echo $date; ?>')"><?php echo $label; ?></div>
+                        <div class="filter-item"
+                            onclick="selectFilter('month', '<?php echo $label; ?>', '<?php echo $date; ?>')">
+                            <?php echo $label; ?></div>
                     <?php endfor; ?>
                     <div class="filter-divider"></div>
                     <div class="filter-item" onclick="showCustomRange()">Custom</div>
@@ -655,7 +660,7 @@ include 'includes/header.php';
     }
 
     .stat-card::before {
-        background: linear-gradient(135deg, #9a9a9a 0%, #000000 100%);
+        background: linear-gradient(135deg, #9a9a9a00 0%, #00000000 100%);
     }
 
     .user-avatar {
